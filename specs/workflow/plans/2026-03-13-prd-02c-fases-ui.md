@@ -87,11 +87,11 @@ export const FASE_STATUS_LABELS: Record<string, string> = {
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] Pacotes instalados: `pnpm add @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities`
-- [ ] Type checking passes: `pnpm build`
+- [x] Pacotes instalados: `pnpm add @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities`
+- [x] Type checking passes: `pnpm build`
 
 #### Manual Verification:
-- [ ] Nenhuma — fase puramente de setup
+- [x] Nenhuma — fase puramente de setup
 
 **Implementation Note**: Fase simples, prosseguir automaticamente após build passar.
 
@@ -197,7 +197,7 @@ export function FasesManager({ fases }: FasesManagerProps) {
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] Type checking passes: `pnpm build`
+- [x] Type checking passes: `pnpm build`
 
 #### Manual Verification:
 - [ ] Acessar `/projetos/[id]/fases` → página carrega sem erro, mostra contagem de fases
@@ -291,10 +291,10 @@ import {
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] Type checking passes: `pnpm build`
+- [x] Type checking passes: `pnpm build`
 
 #### Manual Verification:
-- [ ] Nenhuma — dialog será testado na fase 4 quando integrado ao manager
+- [x] Nenhuma — dialog será testado na fase 4 quando integrado ao manager
 
 **Implementation Note**: O dialog é criado isolado mas só será utilizável após a fase 4 integrá-lo ao fases-manager.
 
@@ -456,7 +456,7 @@ export function FasesManager({ projetoId, fases }: FasesManagerProps) {
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] Type checking passes: `pnpm build`
+- [x] Type checking passes: `pnpm build`
 
 #### Manual Verification:
 - [ ] Acessar `/projetos/[id]/fases` → lista de fases carrega, Fase Geral em primeiro
@@ -589,7 +589,7 @@ function SortableFaseCard({ fase, projetoId, onExcluir }: { ... }) {
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] Type checking passes: `pnpm build`
+- [x] Type checking passes: `pnpm build`
 
 #### Manual Verification:
 - [ ] Arrastar fase não-geral → soltar em nova posição → ordem atualizada na tela
