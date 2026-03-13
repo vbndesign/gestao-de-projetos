@@ -396,14 +396,16 @@ export async function GET(
 
 **`loading.tsx` — skeleton automático da rota:**
 
+> Não existe componente `<Skeleton>` no shadcn v4 deste projeto. Usar divs com `animate-pulse rounded bg-muted` diretamente.
+
 ```tsx
 // app/(internal)/projetos/loading.tsx
 export default function ProjetosLoading() {
   return (
     <div className="space-y-4">
-      <Skeleton className="h-8 w-48" />
+      <div className="h-8 w-48 animate-pulse rounded bg-muted" />
       {Array.from({ length: 5 }).map((_, i) => (
-        <Skeleton key={i} className="h-24 w-full rounded-lg" />
+        <div key={i} className="h-24 w-full animate-pulse rounded-lg bg-muted" />
       ))}
     </div>
   )
