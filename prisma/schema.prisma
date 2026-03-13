@@ -1,0 +1,314 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// === ENUMS ===
+
+enum StatusProjeto {
+  rascunho
+  ativo
+  aguardando_cliente
+  pausado
+  concluido
+  arquivado
+}
+
+enum StatusFase {
+  nao_iniciada
+  em_andamento
+  aguardando_cliente
+  concluida
+  pausada
+  cancelada
+}
+
+enum StatusTarefa {
+  nao_iniciada
+  em_andamento
+  concluida
+  cancelada
+}
+
+enum StatusPendencia {
+  aberta
+  em_andamento
+  resolvida
+  cancelada
+}
+
+enum TipoEventoTimeline {
+  projeto_criado
+  fase_iniciada
+  fase_concluida
+  reuniao_registrada
+  decisao_registrada
+  checkpoint_registrado
+  pendencia_criada
+  pendencia_resolvida
+  documento_publicado
+  mudanca_direcao
+  atualizacao_manual
+}
+
+// === MODELS ===
+
+model Cliente {
+  id                   String    @id @default(uuid()) @db.Uuid
+  nome                 String
+  empresa_organizacao  String?
+  email_principal      String?
+  telefone_contato     String?
+  observacoes          String?   @db.Text
+  created_at           DateTime  @default(now())
+  updated_at           DateTime  @updatedAt
+
+  projetos Projeto[]
+
+  @@map("clientes")
+}
+
+model Projeto {
+  id                  String         @id @default(uuid()) @db.Uuid
+  cliente_id          String         @db.Uuid
+  nome                String
+  descricao           String?        @db.Text
+  status              StatusProjeto
+  data_inicio         DateTime       @db.Date
+  previsao_entrega    DateTime?      @db.Date
+  data_conclusao_real DateTime?      @db.Date
+  fase_atual_id       String?        @db.Uuid
+  created_at          DateTime       @default(now())
+  updated_at          DateTime       @updatedAt
+
+  cliente             Cliente        @relation(fields: [cliente_id], references: [id], onDelete: Cascade)
+  fases               Fase[]
+  lancamentos_horas   LancamentoHoras[]
+  reunioes            Reuniao[]
+  decisoes            Decisao[]
+  checkpoints         Checkpoint[]
+  pendencias          Pendencia[]
+  documentos          Documento[]
+  mudancas_direcao    MudancaDirecao[]
+  eventos_timeline    EventoTimeline[]
+
+  @@index([cliente_id])
+  @@map("projetos")
+}
+
+model Fase {
+  id                    String      @id @default(uuid()) @db.Uuid
+  projeto_id            String      @db.Uuid
+  nome                  String
+  descricao             String?     @db.Text
+  ordem                 Int
+  status                StatusFase
+  data_inicio_prevista  DateTime?   @db.Date
+  data_fim_prevista     DateTime?   @db.Date
+  data_inicio_real      DateTime?   @db.Date
+  data_fim_real         DateTime?   @db.Date
+  is_fase_geral         Boolean
+  created_at            DateTime    @default(now())
+  updated_at            DateTime    @updatedAt
+
+  projeto               Projeto     @relation(fields: [projeto_id], references: [id], onDelete: Cascade)
+  tarefas               TarefaPlanejada[]
+  lancamentos_horas     LancamentoHoras[]
+  reunioes              Reuniao[]
+  decisoes              Decisao[]
+  checkpoints           Checkpoint[]
+  pendencias            Pendencia[]
+  documentos            Documento[]
+  mudancas_direcao      MudancaDirecao[]
+  eventos_timeline      EventoTimeline[]
+
+  @@index([projeto_id])
+  @@map("fases")
+}
+
+model TarefaPlanejada {
+  id                    String       @id @default(uuid()) @db.Uuid
+  fase_id               String       @db.Uuid
+  titulo                String
+  descricao             String?      @db.Text
+  tempo_estimado_horas  Decimal?     @db.Decimal(8, 2)
+  ordem                 Int
+  status                StatusTarefa
+  created_at            DateTime     @default(now())
+  updated_at            DateTime     @updatedAt
+
+  fase                  Fase         @relation(fields: [fase_id], references: [id], onDelete: Cascade)
+
+  @@index([fase_id])
+  @@map("tarefas_planejadas")
+}
+
+model LancamentoHoras {
+  id                String    @id @default(uuid()) @db.Uuid
+  projeto_id        String    @db.Uuid
+  fase_id           String    @db.Uuid
+  data_lancamento   DateTime  @db.Date
+  descricao         String    @db.Text
+  horas_gastas      Decimal   @db.Decimal(8, 2)
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+
+  projeto           Projeto   @relation(fields: [projeto_id], references: [id], onDelete: Cascade)
+  fase              Fase      @relation(fields: [fase_id], references: [id], onDelete: Cascade)
+
+  @@index([projeto_id])
+  @@index([fase_id])
+  @@map("lancamentos_horas")
+}
+
+model Reuniao {
+  id                 String    @id @default(uuid()) @db.Uuid
+  projeto_id         String    @db.Uuid
+  fase_id            String?   @db.Uuid
+  titulo             String
+  data_reuniao       DateTime  @db.Date
+  participantes      String?   @db.Text
+  link_referencia    String?
+  resumo_executivo   String?   @db.Text
+  ata_resumida       String?   @db.Text
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+
+  projeto            Projeto   @relation(fields: [projeto_id], references: [id], onDelete: Cascade)
+  fase               Fase?     @relation(fields: [fase_id], references: [id], onDelete: SetNull)
+  decisoes           Decisao[]
+
+  @@index([projeto_id])
+  @@index([fase_id])
+  @@map("reunioes")
+}
+
+model Decisao {
+  id              String    @id @default(uuid()) @db.Uuid
+  projeto_id      String    @db.Uuid
+  fase_id         String?   @db.Uuid
+  reuniao_id      String?   @db.Uuid
+  titulo          String
+  descricao       String    @db.Text
+  contexto        String?   @db.Text
+  impacto         String?   @db.Text
+  data_decisao    DateTime  @db.Date
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  projeto         Projeto   @relation(fields: [projeto_id], references: [id], onDelete: Cascade)
+  fase            Fase?     @relation(fields: [fase_id], references: [id], onDelete: SetNull)
+  reuniao         Reuniao?  @relation(fields: [reuniao_id], references: [id], onDelete: SetNull)
+
+  @@index([projeto_id])
+  @@index([fase_id])
+  @@index([reuniao_id])
+  @@map("decisoes")
+}
+
+model Checkpoint {
+  id                 String    @id @default(uuid()) @db.Uuid
+  projeto_id         String    @db.Uuid
+  fase_id            String?   @db.Uuid
+  titulo             String
+  resumo             String    @db.Text
+  proximos_passos    String?   @db.Text
+  data_checkpoint    DateTime  @db.Date
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+
+  projeto            Projeto   @relation(fields: [projeto_id], references: [id], onDelete: Cascade)
+  fase               Fase?     @relation(fields: [fase_id], references: [id], onDelete: SetNull)
+
+  @@index([projeto_id])
+  @@index([fase_id])
+  @@map("checkpoints")
+}
+
+model Pendencia {
+  id              String           @id @default(uuid()) @db.Uuid
+  projeto_id      String           @db.Uuid
+  fase_id         String?          @db.Uuid
+  titulo          String
+  descricao       String?          @db.Text
+  status          StatusPendencia
+  prazo           DateTime?        @db.Date
+  data_resolucao  DateTime?        @db.Date
+  created_at      DateTime         @default(now())
+  updated_at      DateTime         @updatedAt
+
+  projeto         Projeto          @relation(fields: [projeto_id], references: [id], onDelete: Cascade)
+  fase            Fase?            @relation(fields: [fase_id], references: [id], onDelete: SetNull)
+
+  @@index([projeto_id])
+  @@index([fase_id])
+  @@map("pendencias")
+}
+
+model Documento {
+  id                    String    @id @default(uuid()) @db.Uuid
+  projeto_id            String    @db.Uuid
+  fase_id               String?   @db.Uuid
+  titulo                String
+  descricao             String?   @db.Text
+  tipo_documento        String?
+  url_arquivo_ou_link   String
+  data_publicacao       DateTime? @db.Date
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+
+  projeto               Projeto   @relation(fields: [projeto_id], references: [id], onDelete: Cascade)
+  fase                  Fase?     @relation(fields: [fase_id], references: [id], onDelete: SetNull)
+
+  @@index([projeto_id])
+  @@index([fase_id])
+  @@map("documentos")
+}
+
+model MudancaDirecao {
+  id                  String    @id @default(uuid()) @db.Uuid
+  projeto_id          String    @db.Uuid
+  fase_id             String?   @db.Uuid
+  titulo              String
+  descricao           String    @db.Text
+  motivo              String?   @db.Text
+  impacto_em_prazo    String?   @db.Text
+  impacto_em_escopo   String?   @db.Text
+  data_mudanca        DateTime  @db.Date
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @updatedAt
+
+  projeto             Projeto   @relation(fields: [projeto_id], references: [id], onDelete: Cascade)
+  fase                Fase?     @relation(fields: [fase_id], references: [id], onDelete: SetNull)
+
+  @@index([projeto_id])
+  @@index([fase_id])
+  @@map("mudancas_direcao")
+}
+
+model EventoTimeline {
+  id              String               @id @default(uuid()) @db.Uuid
+  projeto_id      String               @db.Uuid
+  fase_id         String?              @db.Uuid
+  tipo_evento     TipoEventoTimeline
+  titulo          String
+  descricao       String?              @db.Text
+  data_evento     DateTime             @db.Date
+  origem_tipo     String?
+  origem_id       String?              @db.Uuid
+  created_at      DateTime             @default(now())
+  updated_at      DateTime             @updatedAt
+
+  projeto         Projeto              @relation(fields: [projeto_id], references: [id], onDelete: Cascade)
+  fase            Fase?                @relation(fields: [fase_id], references: [id], onDelete: SetNull)
+
+  @@index([projeto_id])
+  @@index([fase_id])
+  @@index([origem_id])
+  @@map("eventos_timeline")
+}
