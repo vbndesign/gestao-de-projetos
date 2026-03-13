@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useTransition } from 'react'
+import { useState, useEffect, useId, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import {
@@ -54,6 +54,8 @@ export function FasesManager({ projetoId, fases }: FasesManagerProps) {
 
   // Sync com props (quando server revalida)
   useEffect(() => { setLocalFases(fases) }, [fases])
+
+  const dndId = useId()
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -114,7 +116,7 @@ export function FasesManager({ projetoId, fases }: FasesManagerProps) {
       </div>
 
       {/* Lista de fases com DnD */}
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <DndContext id={dndId} sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={localFases.map((f) => f.id)} strategy={verticalListSortingStrategy}>
           <div className="space-y-3">
             {localFases.map((fase) => (
