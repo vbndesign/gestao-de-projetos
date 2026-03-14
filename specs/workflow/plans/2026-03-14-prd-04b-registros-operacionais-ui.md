@@ -152,7 +152,7 @@ export function RegistrosManager({ projetoId, reunioes, decisoes, checkpoints, f
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] `pnpm build` sem erros TypeScript
+- [x] `pnpm build` sem erros TypeScript
 
 #### Manual Verification:
 - [ ] Acessar `/projetos/[id]/timeline` → página carrega (exibe "Timeline — em construção")
@@ -626,7 +626,7 @@ export function CheckpointFormDialog({ trigger, projetoId, fases, checkpoint, on
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] `pnpm build` sem erros TypeScript
+- [x] `pnpm build` sem erros TypeScript
 
 #### Manual Verification:
 - [ ] Abrir "Nova reunião" → modal abre, campos em branco
@@ -898,7 +898,7 @@ export function RegistrosManager({ projetoId, reunioes, decisoes, checkpoints, f
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] `pnpm build` sem erros TypeScript
+- [x] `pnpm build` sem erros TypeScript
 
 #### Manual Verification:
 - [ ] Acessar `/projetos/[id]/timeline` → 3 seções visíveis (Reuniões, Decisões, Checkpoints)
