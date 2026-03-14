@@ -433,11 +433,22 @@ export async function resolverPendencia(pendenciaId: string) {
 ```
 main                     ← produção — nunca push direto
 └── dev                  ← base de desenvolvimento
-    ├── feature/[escopo]-[descricao]
+    ├── feature/[modulo]-prd-NN   ← uma branch por PRD
     ├── fix/[escopo]-[descricao]
     ├── hotfix/[descricao]
     └── chore/[descricao]
 ```
+
+**Nomenclatura por situação:**
+
+| Módulo tem sub-PRDs? | Padrão |
+|---|---|
+| ✅ Sim (ex: Projetos → 02a, 02b, 02c) | `modulo/projetos` como base + `feature/projetos/prd-02a` por sub-PRD |
+| ❌ Não (PRD único) | `feature/[modulo]-prd-NN` diretamente a partir de `dev` |
+
+Exemplos: `feature/tarefas-prd-03`, `feature/horas-prd-06`
+
+Branches são deletadas localmente após o merge (`git branch -d`).
 
 ### Regras por branch
 
@@ -481,7 +492,7 @@ chore(supabase): configurar variáveis de ambiente e cliente SSR
 
 ### Estratégia de merge
 
-- `feature/*` → `dev` — **Squash merge** (1 commit limpo por feature)
+- `feature/*` → `dev` — **Merge commit `--no-ff`** (mantém histórico da branch visível na árvore)
 - `dev` → `main` — **Merge commit** (registra ponto de release)
 - `hotfix/*` → `main` + `dev` — Merge commit + cherry-pick
 
