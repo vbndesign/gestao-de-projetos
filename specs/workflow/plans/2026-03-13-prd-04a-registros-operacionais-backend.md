@@ -178,10 +178,10 @@ export const getCheckpointsByProjeto = cache(async (projetoId: string) => {
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] `pnpm build` sem erros de TypeScript
+- [x] `pnpm build` sem erros de TypeScript
 
 #### Manual Verification:
-- [ ] Nenhuma — schemas e queries são validados pelo build
+- [x] Nenhuma — schemas e queries são validados pelo build
 
 **Implementation Note**: Após `pnpm build` passar, prosseguir diretamente para Phase 2.
 
@@ -573,7 +573,7 @@ export async function excluirCheckpointAction(checkpointId: string) {
 ### Success Criteria:
 
 #### Automated Verification:
-- [ ] `pnpm build` sem erros de TypeScript
+- [x] `pnpm build` sem erros de TypeScript
 
 #### Manual Verification:
 - [ ] Via Prisma Studio: criar reunião → verificar 1 linha em `reunioes` + 1 em `eventos_timeline` com `tipo_evento = reuniao_registrada` e `origem_id` correto
