@@ -47,7 +47,7 @@ Sequência de implementação do MVP. Cada PRD é um input direto para o fluxo R
 | PRD-02a | ✅ concluído |
 | PRD-02b | ✅ concluído |
 | PRD-02c | ✅ concluído |
-| PRD-03 | pendente |
+| PRD-03 | ✅ concluído |
 | PRD-04a | pendente |
 | PRD-04b | pendente |
 | PRD-05a | pendente |

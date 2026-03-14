@@ -150,9 +150,9 @@ Campos do formulário (4 campos):
 | titulo | `<Input>` | sim | `tarefa.titulo` |
 | status | `<Select>` + `<Controller>` | sim (criar: `'nao_iniciada'`) | `tarefa.status as TarefaFormData['status']` |
 | descricao | `<Textarea>` | não | `tarefa.descricao ?? ''` |
-| tempo_estimado_horas | `<Input type="number" step="0.5">` | não | `tarefa.tempo_estimado_horas ?? ''` |
+| tempo_estimado_horas | `<Input type="number" step="any" min="0">` | não | `tarefa.tempo_estimado_horas ?? ''` |
 
-Para `tempo_estimado_horas`: usar `setValueAs: (v) => v === '' || v == null ? null : Number(v)` no `register()`.
+Para `tempo_estimado_horas`: usar `setValueAs: (v) => v === '' || v == null ? null : Number(v)` no `register()`. O `step="any"` aceita qualquer valor decimal (1, 0.5, 1.5, etc) sem restrições de step.
 
 Comportamento idêntico ao `fase-form-dialog.tsx`:
 - `useState(false)` para open/onOpenChange
