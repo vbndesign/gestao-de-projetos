@@ -1,0 +1,96 @@
+{
+  "font": {
+    "family": {
+      "primary": "Inter"
+    },
+    "size": {
+      "sm": 14,
+      "base": 16,
+      "lg": 18,
+      "xl": 20,
+      "h6": 20,
+      "h5": 24,
+      "h4": 28,
+      "h3": 32,
+      "h2": 40,
+      "h1": 48
+    },
+    "lineHeight": {
+      "sm": 24,
+      "base": 24,
+      "lg": 28,
+      "xl": 32,
+      "h6": 28,
+      "h5": 32,
+      "h4": 36,
+      "h3": 40,
+      "h2": 48,
+      "h1": 56
+    },
+    "weight": {
+      "regular": 400,
+      "semibold": 600,
+      "bold": 700
+    }
+  },
+  "text": {
+    "body": {
+      "sm": {
+        "family": "{font.family.primary}",
+        "size": "{font.size.sm}",
+        "lineHeight": "{font.lineHeight.sm}",
+        "weight": "{font.weight.regular}"
+      },
+      "md": {
+        "family": "{font.family.primary}",
+        "size": "{font.size.base}",
+        "lineHeight": "{font.lineHeight.base}",
+        "weight": "{font.weight.regular}"
+      },
+      "lg": {
+        "family": "{font.family.primary}",
+        "size": "{font.size.lg}",
+        "lineHeight": "{font.lineHeight.lg}",
+        "weight": "{font.weight.regular}"
+      }
+    },
+    "heading": {
+      "h1": {
+        "family": "{font.family.primary}",
+        "size": "{font.size.h1}",
+        "lineHeight": "{font.lineHeight.h1}",
+        "weight": "{font.weight.semibold}"
+      },
+      "h2": {
+        "family": "{font.family.primary}",
+        "size": "{font.size.h2}",
+        "lineHeight": "{font.lineHeight.h2}",
+        "weight": "{font.weight.semibold}"
+      },
+      "h3": {
+        "family": "{font.family.primary}",
+        "size": "{font.size.h3}",
+        "lineHeight": "{font.lineHeight.h3}",
+        "weight": "{font.weight.semibold}"
+      },
+      "h4": {
+        "family": "{font.family.primary}",
+        "size": "{font.size.h4}",
+        "lineHeight": "{font.lineHeight.h4}",
+        "weight": "{font.weight.semibold}"
+      },
+      "h5": {
+        "family": "{font.family.primary}",
+        "size": "{font.size.h5}",
+        "lineHeight": "{font.lineHeight.h5}",
+        "weight": "{font.weight.semibold}"
+      },
+      "h6": {
+        "family": "{font.family.primary}",
+        "size": "{font.size.h6}",
+        "lineHeight": "{font.lineHeight.h6}",
+        "weight": "{font.weight.semibold}"
+      }
+    }
+  }
+}
