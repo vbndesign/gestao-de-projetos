@@ -17,6 +17,17 @@ export const getFasesByProjeto = cache(async (projetoId: string) => {
       data_fim_real: true,
       is_fase_geral: true,
       created_at: true,
+      tarefas: {
+        select: {
+          id: true,
+          titulo: true,
+          descricao: true,
+          status: true,
+          ordem: true,
+          tempo_estimado_horas: true,
+        },
+        orderBy: { ordem: 'asc' },
+      },
     },
     orderBy: { ordem: 'asc' },
   })

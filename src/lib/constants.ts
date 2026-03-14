@@ -15,3 +15,10 @@ export const FASE_STATUS_LABELS: Record<string, string> = {
   pausada: 'Pausada',
   cancelada: 'Cancelada',
 }
+
+export const TAREFA_STATUS_LABELS: Record<string, string> = {
+  nao_iniciada: 'Não iniciada',
+  em_andamento: 'Em andamento',
+  concluida: 'Concluída',
+  cancelada: 'Cancelada',
+}
