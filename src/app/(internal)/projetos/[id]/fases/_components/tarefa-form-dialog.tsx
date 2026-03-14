@@ -142,8 +142,8 @@ export function TarefaFormDialog({ trigger, faseId, tarefa, onSuccess }: TarefaF
             <Input
               id="tempo_estimado_horas"
               type="number"
-              step="0.5"
-              min="0.01"
+              step="any"
+              min="0"
               {...form.register('tempo_estimado_horas', {
                 setValueAs: (v) => (v === '' || v == null ? null : Number(v)),
               })}
