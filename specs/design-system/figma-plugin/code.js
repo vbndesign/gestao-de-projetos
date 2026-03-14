@@ -4,6 +4,7 @@ const COLLECTIONS = {
 };
 const DEFAULT_MODE_NAME = "Default";
 const BASELINE_GRID = 4;
+const TEXT_STYLE_PREFIX = "Typography";
 
 const ALLOWED_FONT_SIZES = {
   sm: 14,
@@ -40,19 +41,16 @@ const ALLOWED_FONT_WEIGHTS = {
 const EXPECTED_SEMANTIC_TEXT_TOKENS = {
   body: {
     sm: {
-      family: "{font.family.primary}",
       size: "{font.size.sm}",
       lineHeight: "{font.lineHeight.sm}",
       weight: "{font.weight.regular}",
     },
     md: {
-      family: "{font.family.primary}",
       size: "{font.size.base}",
       lineHeight: "{font.lineHeight.base}",
       weight: "{font.weight.regular}",
     },
     lg: {
-      family: "{font.family.primary}",
       size: "{font.size.lg}",
       lineHeight: "{font.lineHeight.lg}",
       weight: "{font.weight.regular}",
@@ -60,37 +58,31 @@ const EXPECTED_SEMANTIC_TEXT_TOKENS = {
   },
   heading: {
     h1: {
-      family: "{font.family.primary}",
       size: "{font.size.h1}",
       lineHeight: "{font.lineHeight.h1}",
       weight: "{font.weight.semibold}",
     },
     h2: {
-      family: "{font.family.primary}",
       size: "{font.size.h2}",
       lineHeight: "{font.lineHeight.h2}",
       weight: "{font.weight.semibold}",
     },
     h3: {
-      family: "{font.family.primary}",
       size: "{font.size.h3}",
       lineHeight: "{font.lineHeight.h3}",
       weight: "{font.weight.semibold}",
     },
     h4: {
-      family: "{font.family.primary}",
       size: "{font.size.h4}",
       lineHeight: "{font.lineHeight.h4}",
       weight: "{font.weight.semibold}",
     },
     h5: {
-      family: "{font.family.primary}",
       size: "{font.size.h5}",
       lineHeight: "{font.lineHeight.h5}",
       weight: "{font.weight.semibold}",
     },
     h6: {
-      family: "{font.family.primary}",
       size: "{font.size.h6}",
       lineHeight: "{font.lineHeight.h6}",
       weight: "{font.weight.semibold}",
@@ -99,9 +91,6 @@ const EXPECTED_SEMANTIC_TEXT_TOKENS = {
 };
 
 const SEMANTIC_PROPERTY_CONFIG = {
-  family: {
-    resolvedType: "STRING",
-  },
   size: {
     resolvedType: "FLOAT",
     scopes: ["FONT_SIZE"],
@@ -133,14 +122,14 @@ figma.ui.onmessage = async (message) => {
     if (message.type === "IMPORT_TYPOGRAPHY") {
       const tokens = JSON.parse(message.payload);
       validateTypographyTokens(tokens);
-      const summary = await syncTypographyVariables(tokens);
+      const summary = await syncTypography(tokens);
 
       figma.ui.postMessage({
         type: "IMPORT_SUCCESS",
         summary,
       });
       figma.notify(
-        `Typography import complete: ${summary.primitiveCount} primitive variables and ${summary.semanticCount} semantic variables synced.`,
+        `Typography import complete: ${summary.primitiveCount} primitive variables, ${summary.semanticCount} semantic variables, ${summary.textStyleCount} text styles.`,
       );
       return;
     }
@@ -219,10 +208,7 @@ function validateTypographyTokens(tokens) {
 
   for (const [key, value] of Object.entries(tokens.font.lineHeight)) {
     assert(Number.isInteger(value), `font.lineHeight.${key} must be an integer.`);
-    assert(
-      value % BASELINE_GRID === 0,
-      `font.lineHeight.${key} must be a multiple of ${BASELINE_GRID}.`,
-    );
+    assert(value % BASELINE_GRID === 0, `font.lineHeight.${key} must be a multiple of ${BASELINE_GRID}.`);
   }
 }
 
@@ -236,8 +222,37 @@ function collectionKey(collectionName, variableName) {
   return `${collectionName}::${variableName}`;
 }
 
+function styleKey(groupKey, tokenKey) {
+  return `${groupKey}::${tokenKey}`;
+}
+
 function sortScopes(scopes) {
   return [].concat(scopes || []).sort();
+}
+
+function resolveTokenRef(tokens, ref) {
+  const path = tokenRefToVariableName(ref).split("/");
+  let current = tokens;
+
+  for (const segment of path) {
+    current = current[segment];
+  }
+
+  return current;
+}
+
+function getTextStyleName(groupKey, tokenKey) {
+  if (groupKey === "body") {
+    const bodyNames = {
+      sm: "Body/Small",
+      md: "Body/Default",
+      lg: "Body/Large",
+    };
+
+    return `${TEXT_STYLE_PREFIX}/${bodyNames[tokenKey]}`;
+  }
+
+  return `${TEXT_STYLE_PREFIX}/Heading/${tokenKey.toUpperCase()}`;
 }
 
 function toPrimitiveDefinitions(tokens) {
@@ -307,6 +322,27 @@ function toSemanticDefinitions(tokens) {
   return definitions;
 }
 
+function toTextStyleDefinitions(tokens) {
+  const definitions = [];
+
+  for (const [groupKey, groupTokens] of Object.entries(tokens.text)) {
+    for (const [tokenKey, tokenValues] of Object.entries(groupTokens)) {
+      definitions.push({
+        name: getTextStyleName(groupKey, tokenKey),
+        fontFamilyRef: "font/family/primary",
+        sizeRef: `text/${groupKey}/${tokenKey}/size`,
+        lineHeightRef: `text/${groupKey}/${tokenKey}/lineHeight`,
+        weightRef: `text/${groupKey}/${tokenKey}/weight`,
+        fallbackFamily: tokens.font.family.primary,
+        fallbackSize: resolveTokenRef(tokens, tokenValues.size),
+        fallbackLineHeight: resolveTokenRef(tokens, tokenValues.lineHeight),
+      });
+    }
+  }
+
+  return definitions;
+}
+
 async function getOrCreateCollections(collectionNames) {
   const collections = await figma.variables.getLocalVariableCollectionsAsync();
   const collectionMap = new Map(collections.map((collection) => [collection.name, collection]));
@@ -346,8 +382,8 @@ async function getOrCreateCollections(collectionNames) {
 async function getExistingVariables(collectionsByName) {
   const variables = [];
 
-  for (const { collection } of Object.values(collectionsByName)) {
-    for (const variableId of collection.variableIds) {
+  for (const collectionInfo of Object.values(collectionsByName)) {
+    for (const variableId of collectionInfo.collection.variableIds) {
       const variable = await figma.variables.getVariableByIdAsync(variableId);
 
       if (variable) {
@@ -370,6 +406,29 @@ function buildExistingVariableMap(existingVariables, collectionsByName) {
       variable,
     ]),
   );
+}
+
+function removeObsoleteSemanticFamilyVariables(existingVariables, collectionsByName) {
+  const semanticCollectionId = collectionsByName[COLLECTIONS.SEMANTIC].collection.id;
+  const familyPattern = /^text\/(body|heading)\/[^/]+\/family$/;
+  let removedCount = 0;
+
+  for (const variable of existingVariables) {
+    if (variable.variableCollectionId !== semanticCollectionId) {
+      continue;
+    }
+
+    if (!familyPattern.test(variable.name)) {
+      continue;
+    }
+
+    if (typeof variable.remove === "function") {
+      variable.remove();
+      removedCount += 1;
+    }
+  }
+
+  return removedCount;
 }
 
 function getOrCreateVariable(definition, collectionsByName, existingVariableMap) {
@@ -403,16 +462,65 @@ function getOrCreateVariable(definition, collectionsByName, existingVariableMap)
   return variable;
 }
 
-async function syncTypographyVariables(tokens) {
+async function getOrCreateTextStyles() {
+  const styles = await figma.getLocalTextStylesAsync();
+  return new Map(styles.map((style) => [style.name, style]));
+}
+
+function getOrCreateTextStyle(styleDefinition, existingStyleMap) {
+  if (existingStyleMap.has(styleDefinition.name)) {
+    return existingStyleMap.get(styleDefinition.name);
+  }
+
+  const style = figma.createTextStyle();
+  style.name = styleDefinition.name;
+  existingStyleMap.set(styleDefinition.name, style);
+  return style;
+}
+
+async function syncTextStyles(styleDefinitions, syncedVariables) {
+  const existingStyleMap = await getOrCreateTextStyles();
+  await figma.loadFontAsync({ family: "Inter", style: "Regular" });
+
+  for (const styleDefinition of styleDefinitions) {
+    const style = getOrCreateTextStyle(styleDefinition, existingStyleMap);
+    const familyVariable = syncedVariables.get(collectionKey(COLLECTIONS.PRIMITIVES, styleDefinition.fontFamilyRef));
+    const sizeVariable = syncedVariables.get(collectionKey(COLLECTIONS.SEMANTIC, styleDefinition.sizeRef));
+    const lineHeightVariable = syncedVariables.get(collectionKey(COLLECTIONS.SEMANTIC, styleDefinition.lineHeightRef));
+    const weightVariable = syncedVariables.get(collectionKey(COLLECTIONS.SEMANTIC, styleDefinition.weightRef));
+
+    assert(familyVariable, `Missing primitive family variable ${styleDefinition.fontFamilyRef}.`);
+    assert(sizeVariable, `Missing semantic size variable ${styleDefinition.sizeRef}.`);
+    assert(lineHeightVariable, `Missing semantic line-height variable ${styleDefinition.lineHeightRef}.`);
+    assert(weightVariable, `Missing semantic weight variable ${styleDefinition.weightRef}.`);
+
+    style.fontName = {
+      family: styleDefinition.fallbackFamily,
+      style: "Regular",
+    };
+    style.fontSize = styleDefinition.fallbackSize;
+    style.lineHeight = {
+      unit: "PIXELS",
+      value: styleDefinition.fallbackLineHeight,
+    };
+    style.setBoundVariable("fontFamily", familyVariable);
+    style.setBoundVariable("fontSize", sizeVariable);
+    style.setBoundVariable("lineHeight", lineHeightVariable);
+    style.setBoundVariable("fontWeight", weightVariable);
+    style.description = "Generated from typography variables.";
+  }
+}
+
+async function syncTypography(tokens) {
   const primitiveDefinitions = toPrimitiveDefinitions(tokens);
   const semanticDefinitions = toSemanticDefinitions(tokens);
-  const definitions = [...primitiveDefinitions, ...semanticDefinitions];
-  const collectionsByName = await getOrCreateCollections([
-    COLLECTIONS.PRIMITIVES,
-    COLLECTIONS.SEMANTIC,
-  ]);
+  const textStyleDefinitions = toTextStyleDefinitions(tokens);
+  const definitions = primitiveDefinitions.concat(semanticDefinitions);
+  const collectionsByName = await getOrCreateCollections([COLLECTIONS.PRIMITIVES, COLLECTIONS.SEMANTIC]);
   const existingVariables = await getExistingVariables(collectionsByName);
-  const existingVariableMap = buildExistingVariableMap(existingVariables, collectionsByName);
+  const removedObsoleteCount = removeObsoleteSemanticFamilyVariables(existingVariables, collectionsByName);
+  const refreshedExistingVariables = removedObsoleteCount > 0 ? await getExistingVariables(collectionsByName) : existingVariables;
+  const existingVariableMap = buildExistingVariableMap(refreshedExistingVariables, collectionsByName);
   const syncedVariables = new Map();
 
   for (const definition of definitions) {
@@ -425,10 +533,7 @@ async function syncTypographyVariables(tokens) {
     const modeId = collectionsByName[definition.collectionName].modeId;
 
     if (definition.value.kind === "ALIAS") {
-      const targetVariable = syncedVariables.get(
-        collectionKey(COLLECTIONS.PRIMITIVES, definition.value.targetName),
-      );
-
+      const targetVariable = syncedVariables.get(collectionKey(COLLECTIONS.PRIMITIVES, definition.value.targetName));
       assert(targetVariable, `Missing primitive target ${definition.value.targetName}.`);
       variable.setValueForMode(modeId, figma.variables.createVariableAlias(targetVariable));
     } else {
@@ -436,10 +541,14 @@ async function syncTypographyVariables(tokens) {
     }
   }
 
+  await syncTextStyles(textStyleDefinitions, syncedVariables);
+
   return {
     primitiveCount: primitiveDefinitions.length,
     semanticCount: semanticDefinitions.length,
+    textStyleCount: textStyleDefinitions.length,
     presetCount: Object.keys(tokens.text.body).length + Object.keys(tokens.text.heading).length,
+    removedObsoleteCount,
   };
 }
 

@@ -1,31 +1,32 @@
 # Design Tokens Importer
 
-Plugin de desenvolvimento do Figma para importar design tokens definidos no repositório.
+Plugin de desenvolvimento do Figma para importar design tokens definidos no repositÃ³rio.
 
 Estado atual:
 - importa `specs/design-system/tokens/typography.json`
 - cria/atualiza as collections `Primitives` e `Semantic`
-- cria apenas variables e aliases
-- **não cria Text Styles**
+- cria variables e aliases de tipografia
+- cria Text Styles locais vinculados a essas variables
+- usa `font/family/primary` diretamente nos Text Styles, sem duplicar `family` em `Semantic`
 
 ## Estrutura
 
 - `manifest.json` - manifest do plugin para o Figma Desktop
-- `code.js` - lógica principal do plugin e sincronização de variables
+- `code.js` - lÃ³gica principal do plugin, sincronizaÃ§Ã£o de variables e geraÃ§Ã£o de Text Styles
 - `ui.html` - interface para colar ou carregar um arquivo JSON
 
 ## Como rodar no Figma
 
-Pré-requisito:
+PrÃ©-requisito:
 - usar o Figma Desktop
 
 Passo a passo:
 1. Abra qualquer arquivo no Figma Desktop.
-2. Vá em `Plugins > Development > Import plugin from manifest...`.
+2. VÃ¡ em `Plugins > Development > Import plugin from manifest...`.
 3. Selecione [manifest.json](/C:/code/gestao-projetos/specs/design-system/figma-plugin/manifest.json).
-4. Depois da importação, rode o plugin em `Plugins > Development > Design Tokens Importer`.
-5. No plugin, clique em `Load JSON file` e selecione [typography.json](/C:/code/gestao-projetos/specs/design-system/tokens/typography.json), ou cole o conteúdo manualmente.
-6. Clique em `Import typography variables`.
+4. Depois da importaÃ§Ã£o, rode o plugin em `Plugins > Development > Design Tokens Importer`.
+5. No plugin, clique em `Load JSON file` e selecione [typography.json](/C:/code/gestao-projetos/specs/design-system/tokens/typography.json), ou cole o conteÃºdo manualmente.
+6. Clique em `Import typography`.
 
 ## Resultado esperado
 
@@ -33,23 +34,20 @@ O plugin cria ou atualiza:
 - collection `Primitives`
 - collection `Semantic`
 - variables primitivas de tipografia
-- variables semânticas de tipografia como aliases para os primitives
+- variables semÃ¢nticas de tipografia como aliases para os primitives
+- Text Styles locais em `Typography/Heading/*` e `Typography/Body/*`
 
-O plugin não cria:
-- Text Styles
-- Color Styles
-- Effect Styles
-- qualquer outro style do Figma
+O plugin remove quando encontrar:
+- semantic variables antigas `text/*/*/family` criadas pela versÃ£o anterior do fluxo
 
 ## Fluxo de desenvolvimento
 
 Sempre que alterar os arquivos do plugin:
-1. salve as mudanças no repositório
-2. rode novamente o plugin pelo menu `Plugins > Development`
+1. salve as mudanÃ§as no repositÃ³rio
+2. reimporte o manifest no Figma se o plugin jÃ¡ estiver carregado
+3. rode novamente o plugin pelo menu `Plugins > Development`
 
-Se o Figma continuar usando uma versão antiga, reimporte o manifest.
-
-## Próximos domínios
+## PrÃ³ximos domÃ­nios
 
 A estrutura foi pensada para crescer para:
 - colors
@@ -58,4 +56,4 @@ A estrutura foi pensada para crescer para:
 - radius
 - borders
 
-O caminho recomendado é manter um arquivo JSON por domínio em `specs/design-system/tokens/` e estender o plugin para importar cada domínio sem sair do modelo `variables-only`.
+O caminho recomendado Ã© manter um arquivo JSON por domÃ­nio em `specs/design-system/tokens/` e estender o plugin para importar cada domÃ­nio com variables como source of truth e styles locais quando fizer sentido para o uso dentro do Figma.

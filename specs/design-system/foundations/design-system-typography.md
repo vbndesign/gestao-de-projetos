@@ -195,7 +195,7 @@ font.size.h1
 font.lineHeight.h1  
 font.weight.semibold
 
-These semantic tokens represent the canonical semantic typography variables of the system and must be implemented as Figma variables, not as Figma Text Styles.
+These semantic tokens represent the canonical typography presets of the system. In Figma, they must exist as semantic variables and also drive the generated Text Styles.
 
 ---
 
@@ -244,19 +244,16 @@ Example:
   "text": {
     "body": {
       "sm": {
-        "family": "{font.family.primary}",
         "size": "{font.size.sm}",
         "lineHeight": "{font.lineHeight.sm}",
         "weight": "{font.weight.regular}"
       },
       "md": {
-        "family": "{font.family.primary}",
         "size": "{font.size.base}",
         "lineHeight": "{font.lineHeight.base}",
         "weight": "{font.weight.regular}"
       },
       "lg": {
-        "family": "{font.family.primary}",
         "size": "{font.size.lg}",
         "lineHeight": "{font.lineHeight.lg}",
         "weight": "{font.weight.regular}"
@@ -264,7 +261,6 @@ Example:
     },
     "heading": {
       "h1": {
-        "family": "{font.family.primary}",
         "size": "{font.size.h1}",
         "lineHeight": "{font.lineHeight.h1}",
         "weight": "{font.weight.semibold}"
@@ -314,73 +310,69 @@ Collection:
 Semantic
 
 Variables:
-text/body/sm/family  
 text/body/sm/size  
 text/body/sm/lineHeight  
 text/body/sm/weight
 
-text/body/md/family  
 text/body/md/size  
 text/body/md/lineHeight  
 text/body/md/weight
 
-text/body/lg/family  
 text/body/lg/size  
 text/body/lg/lineHeight  
 text/body/lg/weight
 
-text/heading/h1/family  
 text/heading/h1/size  
 text/heading/h1/lineHeight  
 text/heading/h1/weight
 
-text/heading/h2/family  
 text/heading/h2/size  
 text/heading/h2/lineHeight  
 text/heading/h2/weight
 
-text/heading/h3/family  
 text/heading/h3/size  
 text/heading/h3/lineHeight  
 text/heading/h3/weight
 
-text/heading/h4/family  
 text/heading/h4/size  
 text/heading/h4/lineHeight  
 text/heading/h4/weight
 
-text/heading/h5/family  
 text/heading/h5/size  
 text/heading/h5/lineHeight  
 text/heading/h5/weight
 
-text/heading/h6/family  
 text/heading/h6/size  
 text/heading/h6/lineHeight  
 text/heading/h6/weight
 
 Semantic variables must alias the primitive variables instead of duplicating raw values.
 
-No Figma Text Styles should be created by this workflow. Typography must remain variable-based for future MCP and REST API integration.
+The semantic layer should not duplicate `font-family`. Text Styles must use the primitive `font/family/primary` variable directly.
 
 ---
 
-# Semantic Typography in Figma
+# Text Styles in Figma
 
-Typography in Figma must be defined using the semantic variables above, which in turn reference the primitive variables above.
+Text Styles should be generated from the typography variables above.
 
-Semantic heading groups:
-Heading/H1  
-Heading/H2  
-Heading/H3  
-Heading/H4  
-Heading/H5  
-Heading/H6
+They must bind:
+- `font-family` from `font/family/primary`
+- `font-size` from the semantic `size` variable
+- `line-height` from the semantic `lineHeight` variable
+- `font-weight` from the semantic `weight` variable
 
-Semantic body groups:
-Body/Large  
-Body/Default  
-Body/Small
+Generated style names:
+Typography/Heading/H1  
+Typography/Heading/H2  
+Typography/Heading/H3  
+Typography/Heading/H4  
+Typography/Heading/H5  
+Typography/Heading/H6
+
+Typography/Body/Large  
+Typography/Body/Default  
+Typography/Body/Small
 
 ---
 
@@ -413,3 +405,4 @@ Possible future additions:
 
 # Estrutura sugerida da pasta no projeto
 specs/design-system/foundations/design-system-typography.md
+

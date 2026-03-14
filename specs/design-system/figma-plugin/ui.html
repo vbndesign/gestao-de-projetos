@@ -123,9 +123,9 @@
       <div class="card">
         <h1>Design Tokens Importer</h1>
         <p class="hint">
-          This plugin currently imports <strong>typography variables</strong> only. It creates
-          collections <code>Primitives</code> and <code>Semantic</code> and never creates
-          Figma text styles.
+          This plugin imports <strong>typography variables</strong> and creates local
+          <strong>Text Styles</strong> bound to those variables. It creates collections
+          <code>Primitives</code> and <code>Semantic</code>.
         </p>
       </div>
 
@@ -142,7 +142,7 @@
 
       <div class="card">
         <div class="actions">
-          <button id="import-button" class="primary" type="button">Import typography variables</button>
+          <button id="import-button" class="primary" type="button">Import typography</button>
           <button id="close-button" class="secondary" type="button">Close</button>
         </div>
         <p id="status" class="status hint">Select or paste a token file to start.</p>
@@ -196,7 +196,7 @@
           return;
         }
 
-        setStatus("Importing typography variables...", "hint");
+        setStatus("Importing typography variables and text styles...", "hint");
         parent.postMessage(
           {
             pluginMessage: {
@@ -228,7 +228,7 @@
 
         if (message.type === "IMPORT_SUCCESS") {
           setStatus(
-            `Import completed.\nPrimitives: ${message.summary.primitiveCount}\nSemantic: ${message.summary.semanticCount}\nTypography presets: ${message.summary.presetCount}\n\nNo text styles were created.`,
+            `Import completed.\nPrimitives: ${message.summary.primitiveCount}\nSemantic: ${message.summary.semanticCount}\nText styles: ${message.summary.textStyleCount}\nTypography presets: ${message.summary.presetCount}\nRemoved obsolete semantic family variables: ${message.summary.removedObsoleteCount}`,
             "ok",
           );
           return;

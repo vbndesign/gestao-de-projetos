@@ -51,19 +51,16 @@ const ALLOWED_FONT_WEIGHTS = {
 const EXPECTED_SEMANTIC_TEXT_TOKENS = {
   body: {
     sm: {
-      family: "{font.family.primary}",
       size: "{font.size.sm}",
       lineHeight: "{font.lineHeight.sm}",
       weight: "{font.weight.regular}",
     },
     md: {
-      family: "{font.family.primary}",
       size: "{font.size.base}",
       lineHeight: "{font.lineHeight.base}",
       weight: "{font.weight.regular}",
     },
     lg: {
-      family: "{font.family.primary}",
       size: "{font.size.lg}",
       lineHeight: "{font.lineHeight.lg}",
       weight: "{font.weight.regular}",
@@ -71,37 +68,31 @@ const EXPECTED_SEMANTIC_TEXT_TOKENS = {
   },
   heading: {
     h1: {
-      family: "{font.family.primary}",
       size: "{font.size.h1}",
       lineHeight: "{font.lineHeight.h1}",
       weight: "{font.weight.semibold}",
     },
     h2: {
-      family: "{font.family.primary}",
       size: "{font.size.h2}",
       lineHeight: "{font.lineHeight.h2}",
       weight: "{font.weight.semibold}",
     },
     h3: {
-      family: "{font.family.primary}",
       size: "{font.size.h3}",
       lineHeight: "{font.lineHeight.h3}",
       weight: "{font.weight.semibold}",
     },
     h4: {
-      family: "{font.family.primary}",
       size: "{font.size.h4}",
       lineHeight: "{font.lineHeight.h4}",
       weight: "{font.weight.semibold}",
     },
     h5: {
-      family: "{font.family.primary}",
       size: "{font.size.h5}",
       lineHeight: "{font.lineHeight.h5}",
       weight: "{font.weight.semibold}",
     },
     h6: {
-      family: "{font.family.primary}",
       size: "{font.size.h6}",
       lineHeight: "{font.lineHeight.h6}",
       weight: "{font.weight.semibold}",
@@ -110,9 +101,6 @@ const EXPECTED_SEMANTIC_TEXT_TOKENS = {
 };
 
 const SEMANTIC_PROPERTY_CONFIG = {
-  family: {
-    resolvedType: "STRING",
-  },
   size: {
     resolvedType: "FLOAT",
     scopes: ["FONT_SIZE"],
@@ -192,27 +180,16 @@ function validateTypographyTokens(tokens) {
   ensureExactEntries(tokens.font.weight, ALLOWED_FONT_WEIGHTS, "font.weight");
   ensureExactShape(tokens.text, EXPECTED_SEMANTIC_TEXT_TOKENS, "text");
 
-  const baselineWarnings = [];
-
   for (const [key, value] of Object.entries(tokens.font.lineHeight)) {
     assert(Number.isInteger(value), `font.lineHeight.${key} must be an integer.`);
-
-    if (value % BASELINE_GRID !== 0) {
-      baselineWarnings.push(`font.lineHeight.${key}=${value}`);
-    }
-  }
-
-  if (baselineWarnings.length > 0) {
-    console.warn(
-      `Warning: spec-defined line heights are not multiples of ${BASELINE_GRID}px (${baselineWarnings.join(", ")}). Keeping the documented scale as the repository source of truth.`,
-    );
+    assert(value % BASELINE_GRID === 0, `font.lineHeight.${key} must be a multiple of ${BASELINE_GRID}.`);
   }
 }
 
 function tokenRefToVariableName(ref) {
   const match = /^\{([a-zA-Z0-9_.]+)\}$/.exec(ref);
   assert(match, `Invalid token reference: ${ref}.`);
-  return match[1].replaceAll(".", "/");
+  return match[1].split(".").join("/");
 }
 
 function collectionKey(collectionName, variableName) {
@@ -220,7 +197,7 @@ function collectionKey(collectionName, variableName) {
 }
 
 function sortScopes(scopes) {
-  return [...(scopes ?? [])].sort();
+  return [].concat(scopes || []).sort();
 }
 
 function toPrimitiveDefinitions(tokens) {
@@ -401,7 +378,7 @@ async function ensureCollections(existingCollections, collectionNames) {
 
     resolvedCollections[collectionName] = {
       collectionId: collection.id,
-      modeId: collection.defaultModeId ?? collection.modes?.[0]?.modeId,
+      modeId: collection.defaultModeId || (collection.modes[0] ? collection.modes[0].modeId : null),
     };
 
     assert(resolvedCollections[collectionName].modeId, `Collection ${collectionName} must have at least one mode.`);
@@ -455,7 +432,7 @@ function buildSyncPayload(definitions, collectionsByName, existingVariables) {
       continue;
     }
 
-    const tempVariableId = `tmp_${definition.collectionName.toLowerCase()}_${definition.name.replaceAll("/", "_")}`;
+    const tempVariableId = `tmp_${definition.collectionName.toLowerCase()}_${definition.name.replace(/\//g, "_")}`;
     definitionIdMap.set(key, tempVariableId);
     variables.push({
       action: "CREATE",
@@ -535,7 +512,7 @@ async function syncTypographyVariables() {
   await figmaRequest("POST", `/files/${FIGMA_FILE_KEY}/variables`, payload);
 
   console.log(
-    `Synced ${primitiveDefinitions.length} primitive variables to \"${COLLECTIONS.PRIMITIVES}\" and ${semanticDefinitions.length} semantic variables to \"${COLLECTIONS.SEMANTIC}\". No text styles were created.`,
+    `Synced ${primitiveDefinitions.length} primitive variables to \"${COLLECTIONS.PRIMITIVES}\" and ${semanticDefinitions.length} semantic variables to \"${COLLECTIONS.SEMANTIC}\".`,
   );
 }
 
