@@ -203,6 +203,24 @@ git log modulo/clientes --oneline -10
 
 ---
 
+## Design System (Exceção)
+
+`modulo/design-system` **não segue numeração de PRDs**. Evolui em paralelo como módulo transversal:
+
+```
+modulo/design-system (base)
+├── feature/typography
+├── feature/spacing
+├── feature/colors
+└── ...
+```
+
+- Work branches: `feature/{tema}` derivadas de `modulo/design-system`
+- PR: `feature/{tema}` → `modulo/design-system` (review + merge --no-ff)
+- Quando temas prontos: PR `modulo/design-system` → `dev` (review + merge --no-ff)
+
+---
+
 ## Regras Críticas
 
 ❌ **NUNCA:**
@@ -249,4 +267,4 @@ git log modulo/clientes --oneline -10
 
 ---
 
-**Última atualização:** 2026-03-13 — Adicionada regra de `modulo/{nome}` apenas para múltiplos PRDs
+**Última atualização:** 2026-03-14 — Adicionada exceção Design System sem PRD numerado

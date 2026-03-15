@@ -87,6 +87,12 @@
         color: #e2e8f0;
       }
 
+      button.accent {
+        background: #2563eb;
+        color: #dbeafe;
+        font-weight: 700;
+      }
+
       button:disabled {
         opacity: 0.6;
         cursor: not-allowed;
@@ -123,15 +129,19 @@
       <div class="card">
         <h1>Design Tokens Importer</h1>
         <p class="hint">
-          This plugin imports <strong>typography variables</strong> and creates local
-          <strong>Text Styles</strong> bound to those variables. It creates collections
-          <code>Primitives</code> and <code>Semantic</code>.
+          Import typography tokens into <strong>variables + Text Styles</strong>, or import
+          color tokens into <strong>variables only</strong>. The plugin syncs the
+          <code>Primitives</code> and <code>Semantic</code> collections from repository JSON files.
         </p>
       </div>
 
       <div class="card">
-        <label for="token-input">Typography tokens JSON</label>
-        <textarea id="token-input" spellcheck="false" placeholder="Paste specs/design-system/tokens/typography.json here"></textarea>
+        <label for="token-input">Design tokens JSON</label>
+        <textarea
+          id="token-input"
+          spellcheck="false"
+          placeholder="Paste specs/design-system/tokens/typography.json or colors.json here"
+        ></textarea>
         <div class="actions">
           <label class="file-button" for="file-input">Load JSON file</label>
           <input id="file-input" type="file" accept="application/json,.json" />
@@ -142,7 +152,8 @@
 
       <div class="card">
         <div class="actions">
-          <button id="import-button" class="primary" type="button">Import typography</button>
+          <button id="import-typography-button" class="primary" type="button">Import typography</button>
+          <button id="import-colors-button" class="accent" type="button">Import colors</button>
           <button id="close-button" class="secondary" type="button">Close</button>
         </div>
         <p id="status" class="status hint">Select or paste a token file to start.</p>
@@ -154,7 +165,8 @@
       const fileInput = document.getElementById("file-input");
       const formatButton = document.getElementById("format-button");
       const clearButton = document.getElementById("clear-button");
-      const importButton = document.getElementById("import-button");
+      const importTypographyButton = document.getElementById("import-typography-button");
+      const importColorsButton = document.getElementById("import-colors-button");
       const closeButton = document.getElementById("close-button");
       const status = document.getElementById("status");
 
@@ -190,9 +202,17 @@
         setStatus("Input cleared.", "hint");
       });
 
-      importButton.addEventListener("click", () => {
+      function ensureInput(domainLabel) {
         if (!tokenInput.value.trim()) {
-          setStatus("Paste or load specs/design-system/tokens/typography.json first.", "error");
+          setStatus("Paste or load a " + domainLabel + " token file first.", "error");
+          return false;
+        }
+
+        return true;
+      }
+
+      importTypographyButton.addEventListener("click", () => {
+        if (!ensureInput("typography")) {
           return;
         }
 
@@ -201,6 +221,23 @@
           {
             pluginMessage: {
               type: "IMPORT_TYPOGRAPHY",
+              payload: tokenInput.value,
+            },
+          },
+          "*",
+        );
+      });
+
+      importColorsButton.addEventListener("click", () => {
+        if (!ensureInput("color")) {
+          return;
+        }
+
+        setStatus("Importing color variables...", "hint");
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: "IMPORT_COLORS",
               payload: tokenInput.value,
             },
           },
@@ -226,9 +263,17 @@
           return;
         }
 
-        if (message.type === "IMPORT_SUCCESS") {
+        if (message.type === "IMPORT_SUCCESS" && message.domain === "typography") {
           setStatus(
-            `Import completed.\nPrimitives: ${message.summary.primitiveCount}\nSemantic: ${message.summary.semanticCount}\nText styles: ${message.summary.textStyleCount}\nTypography presets: ${message.summary.presetCount}\nRemoved obsolete semantic family variables: ${message.summary.removedObsoleteCount}`,
+            `Typography import completed.\nPrimitives: ${message.summary.primitiveCount}\nSemantic: ${message.summary.semanticCount}\nText styles: ${message.summary.textStyleCount}\nTypography presets: ${message.summary.presetCount}\nRemoved obsolete variables: ${message.summary.removedVariableCount}\nRemoved obsolete text styles: ${message.summary.removedTextStyleCount}`,
+            "ok",
+          );
+          return;
+        }
+
+        if (message.type === "IMPORT_SUCCESS" && message.domain === "colors") {
+          setStatus(
+            `Color import completed.\nPrimitives: ${message.summary.primitiveCount}\nSemantic: ${message.summary.semanticCount}\nRemoved obsolete variables: ${message.summary.removedVariableCount}`,
             "ok",
           );
           return;

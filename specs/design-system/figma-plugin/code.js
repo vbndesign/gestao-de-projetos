@@ -2,6 +2,7 @@ const COLLECTIONS = {
   PRIMITIVES: "Primitives",
   SEMANTIC: "Semantic",
 };
+
 const DEFAULT_MODE_NAME = "Default";
 const BASELINE_GRID = 4;
 const TEXT_STYLE_PREFIX = "Typography";
@@ -90,6 +91,27 @@ const EXPECTED_SEMANTIC_TEXT_TOKENS = {
   },
 };
 
+const EXPECTED_COLOR_PRIMITIVE_KEYS = {
+  brand: ["900", "800", "700", "600", "500", "400", "300", "200", "100", "50"],
+  neutral: ["900", "800", "700", "600", "500", "400", "300", "200", "100", "50", "0"],
+  success: ["800", "700", "500", "300", "100"],
+  warning: ["800", "700", "500", "300", "100"],
+  danger: ["800", "700", "500", "300", "100"],
+  info: ["800", "700", "500", "300", "100"],
+};
+
+const EXPECTED_COLOR_SEMANTIC_KEYS = {
+  bg: ["canvas", "surface", "subtle", "brand", "inverse"],
+  text: ["heading", "body", "muted", "placeholder", "disabled"],
+  border: ["default", "subtle", "strong", "brand", "focus", "inverse"],
+  feedback: {
+    success: ["bg", "surface", "text", "border"],
+    warning: ["bg", "surface", "text", "border"],
+    danger: ["bg", "surface", "text", "border"],
+    info: ["bg", "surface", "text", "border"],
+  },
+};
+
 const SEMANTIC_PROPERTY_CONFIG = {
   size: {
     resolvedType: "FLOAT",
@@ -112,8 +134,8 @@ const PRIMITIVE_SCOPE_CONFIG = {
 };
 
 figma.showUI(__html__, {
-  width: 520,
-  height: 680,
+  width: 560,
+  height: 720,
   themeColors: true,
 });
 
@@ -126,10 +148,37 @@ figma.ui.onmessage = async (message) => {
 
       figma.ui.postMessage({
         type: "IMPORT_SUCCESS",
-        summary,
+        domain: "typography",
+        summary: summary,
       });
       figma.notify(
-        `Typography import complete: ${summary.primitiveCount} primitive variables, ${summary.semanticCount} semantic variables, ${summary.textStyleCount} text styles.`,
+        "Typography import complete: " +
+          summary.primitiveCount +
+          " primitive variables, " +
+          summary.semanticCount +
+          " semantic variables, " +
+          summary.textStyleCount +
+          " text styles.",
+      );
+      return;
+    }
+
+    if (message.type === "IMPORT_COLORS") {
+      const tokens = JSON.parse(message.payload);
+      validateColorTokens(tokens);
+      const summary = await syncColors(tokens);
+
+      figma.ui.postMessage({
+        type: "IMPORT_SUCCESS",
+        domain: "colors",
+        summary: summary,
+      });
+      figma.notify(
+        "Color import complete: " +
+          summary.primitiveCount +
+          " primitive variables, " +
+          summary.semanticCount +
+          " semantic variables.",
       );
       return;
     }
@@ -153,51 +202,70 @@ function assert(condition, message) {
   }
 }
 
+function isPlainObject(value) {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
 function ensureExactEntries(actual, expected, label) {
   const actualKeys = Object.keys(actual).sort();
   const expectedKeys = Object.keys(expected).sort();
 
   assert(
     JSON.stringify(actualKeys) === JSON.stringify(expectedKeys),
-    `${label} must contain exactly: ${expectedKeys.join(", ")}.`,
+    label + " must contain exactly: " + expectedKeys.join(", ") + ".",
   );
 
-  for (const [key, value] of Object.entries(expected)) {
-    assert(actual[key] === value, `${label}.${key} must be ${value}.`);
-  }
+  Object.entries(expected).forEach(function (entry) {
+    const key = entry[0];
+    const value = entry[1];
+    assert(actual[key] === value, label + "." + key + " must be " + value + ".");
+  });
 }
 
 function ensureExactShape(actual, expected, label) {
-  assert(actual && typeof actual === "object", `${label} must be an object.`);
+  assert(isPlainObject(actual), label + " must be an object.");
 
   const actualKeys = Object.keys(actual).sort();
   const expectedKeys = Object.keys(expected).sort();
 
   assert(
     JSON.stringify(actualKeys) === JSON.stringify(expectedKeys),
-    `${label} must contain exactly: ${expectedKeys.join(", ")}.`,
+    label + " must contain exactly: " + expectedKeys.join(", ") + ".",
   );
 
-  for (const [key, value] of Object.entries(expected)) {
-    if (value && typeof value === "object" && !Array.isArray(value)) {
-      ensureExactShape(actual[key], value, `${label}.${key}`);
-      continue;
+  Object.entries(expected).forEach(function (entry) {
+    const key = entry[0];
+    const value = entry[1];
+
+    if (isPlainObject(value)) {
+      ensureExactShape(actual[key], value, label + "." + key);
+      return;
     }
 
-    assert(actual[key] === value, `${label}.${key} must be ${value}.`);
-  }
+    assert(actual[key] === value, label + "." + key + " must be " + value + ".");
+  });
+}
+
+function ensureExactKeys(actual, expectedKeys, label) {
+  const actualKeys = Object.keys(actual).sort();
+  const sortedExpectedKeys = expectedKeys.slice().sort();
+
+  assert(
+    JSON.stringify(actualKeys) === JSON.stringify(sortedExpectedKeys),
+    label + " must contain exactly: " + sortedExpectedKeys.join(", ") + ".",
+  );
 }
 
 function validateTypographyTokens(tokens) {
-  assert(tokens && typeof tokens === "object", "Token file must export an object.");
-  assert(tokens.font && typeof tokens.font === "object", "Missing top-level font object.");
-  assert(tokens.font.family && typeof tokens.font.family === "object", "Missing font.family.");
-  assert(tokens.font.size && typeof tokens.font.size === "object", "Missing font.size.");
-  assert(tokens.font.lineHeight && typeof tokens.font.lineHeight === "object", "Missing font.lineHeight.");
-  assert(tokens.font.weight && typeof tokens.font.weight === "object", "Missing font.weight.");
-  assert(tokens.text && typeof tokens.text === "object", "Missing top-level text object.");
-  assert(tokens.text.body && typeof tokens.text.body === "object", "Missing text.body.");
-  assert(tokens.text.heading && typeof tokens.text.heading === "object", "Missing text.heading.");
+  assert(isPlainObject(tokens), "Token file must export an object.");
+  assert(isPlainObject(tokens.font), "Missing top-level font object.");
+  assert(isPlainObject(tokens.font.family), "Missing font.family.");
+  assert(isPlainObject(tokens.font.size), "Missing font.size.");
+  assert(isPlainObject(tokens.font.lineHeight), "Missing font.lineHeight.");
+  assert(isPlainObject(tokens.font.weight), "Missing font.weight.");
+  assert(isPlainObject(tokens.text), "Missing top-level text object.");
+  assert(isPlainObject(tokens.text.body), "Missing text.body.");
+  assert(isPlainObject(tokens.text.heading), "Missing text.heading.");
 
   assert(tokens.font.family.primary === "Inter", "font.family.primary must remain Inter.");
 
@@ -206,24 +274,132 @@ function validateTypographyTokens(tokens) {
   ensureExactEntries(tokens.font.weight, ALLOWED_FONT_WEIGHTS, "font.weight");
   ensureExactShape(tokens.text, EXPECTED_SEMANTIC_TEXT_TOKENS, "text");
 
-  for (const [key, value] of Object.entries(tokens.font.lineHeight)) {
-    assert(Number.isInteger(value), `font.lineHeight.${key} must be an integer.`);
-    assert(value % BASELINE_GRID === 0, `font.lineHeight.${key} must be a multiple of ${BASELINE_GRID}.`);
-  }
+  Object.entries(tokens.font.lineHeight).forEach(function (entry) {
+    const key = entry[0];
+    const value = entry[1];
+    assert(Number.isInteger(value), "font.lineHeight." + key + " must be an integer.");
+    assert(
+      value % BASELINE_GRID === 0,
+      "font.lineHeight." + key + " must be a multiple of " + BASELINE_GRID + ".",
+    );
+  });
 }
 
-function tokenRefToVariableName(ref) {
+function validateHexColor(value, label) {
+  assert(
+    /^#[0-9A-Fa-f]{6}$/.test(value),
+    label + " must be a 6-digit hexadecimal color.",
+  );
+}
+
+function validateTokenRef(value, label, domainName) {
+  const regex = new RegExp("^\\{" + domainName + "\\.(primitive|semantic)\\.[a-zA-Z0-9_.]+\\}$");
+  assert(regex.test(value), label + " must be a valid " + domainName + " token reference.");
+}
+
+function validateColorTokens(tokens) {
+  assert(isPlainObject(tokens), "Token file must export an object.");
+  assert(isPlainObject(tokens.color), "Missing top-level color object.");
+  assert(isPlainObject(tokens.color.primitive), "Missing color.primitive.");
+  assert(isPlainObject(tokens.color.semantic), "Missing color.semantic.");
+
+  ensureExactKeys(tokens.color.primitive, Object.keys(EXPECTED_COLOR_PRIMITIVE_KEYS), "color.primitive");
+
+  Object.entries(EXPECTED_COLOR_PRIMITIVE_KEYS).forEach(function (entry) {
+    const paletteName = entry[0];
+    const expectedSteps = entry[1];
+    const palette = tokens.color.primitive[paletteName];
+
+    assert(isPlainObject(palette), "color.primitive." + paletteName + " must be an object.");
+    ensureExactKeys(palette, expectedSteps, "color.primitive." + paletteName);
+
+    Object.entries(palette).forEach(function (stepEntry) {
+      validateHexColor(stepEntry[1], "color.primitive." + paletteName + "." + stepEntry[0]);
+    });
+  });
+
+  ensureExactKeys(tokens.color.semantic, ["bg", "text", "border", "feedback"], "color.semantic");
+  ensureExactKeys(tokens.color.semantic.bg, EXPECTED_COLOR_SEMANTIC_KEYS.bg, "color.semantic.bg");
+  ensureExactKeys(tokens.color.semantic.text, EXPECTED_COLOR_SEMANTIC_KEYS.text, "color.semantic.text");
+  ensureExactKeys(tokens.color.semantic.border, EXPECTED_COLOR_SEMANTIC_KEYS.border, "color.semantic.border");
+  ensureExactKeys(
+    tokens.color.semantic.feedback,
+    Object.keys(EXPECTED_COLOR_SEMANTIC_KEYS.feedback),
+    "color.semantic.feedback",
+  );
+
+  Object.entries(tokens.color.semantic.bg).forEach(function (entry) {
+    validateTokenRef(entry[1], "color.semantic.bg." + entry[0], "color");
+  });
+
+  Object.entries(tokens.color.semantic.text).forEach(function (entry) {
+    validateTokenRef(entry[1], "color.semantic.text." + entry[0], "color");
+  });
+
+  Object.entries(tokens.color.semantic.border).forEach(function (entry) {
+    validateTokenRef(entry[1], "color.semantic.border." + entry[0], "color");
+  });
+
+  Object.entries(EXPECTED_COLOR_SEMANTIC_KEYS.feedback).forEach(function (entry) {
+    const statusName = entry[0];
+    const expectedKeys = entry[1];
+    const statusTokens = tokens.color.semantic.feedback[statusName];
+
+    assert(isPlainObject(statusTokens), "color.semantic.feedback." + statusName + " must be an object.");
+    ensureExactKeys(statusTokens, expectedKeys, "color.semantic.feedback." + statusName);
+
+    Object.entries(statusTokens).forEach(function (statusEntry) {
+      validateTokenRef(
+        statusEntry[1],
+        "color.semantic.feedback." + statusName + "." + statusEntry[0],
+        "color",
+      );
+    });
+  });
+}
+
+function parseTokenRef(ref) {
   const match = /^\{([a-zA-Z0-9_.]+)\}$/.exec(ref);
-  assert(match, `Invalid token reference: ${ref}.`);
-  return match[1].split(".").join("/");
+  assert(match, "Invalid token reference: " + ref + ".");
+  return match[1].split(".");
+}
+
+function tokenRefToPath(ref) {
+  return parseTokenRef(ref).join("/");
+}
+
+function tokenRefToVariableTarget(ref) {
+  const parts = parseTokenRef(ref);
+
+  if (parts[0] === "color") {
+    assert(parts.length >= 4, "Invalid color reference: " + ref + ".");
+    assert(parts[1] === "primitive" || parts[1] === "semantic", "Invalid color layer in " + ref + ".");
+
+    return {
+      collectionName: parts[1] === "primitive" ? COLLECTIONS.PRIMITIVES : COLLECTIONS.SEMANTIC,
+      variableName: "color/" + parts.slice(2).join("/"),
+    };
+  }
+
+  if (parts[0] === "font") {
+    return {
+      collectionName: COLLECTIONS.PRIMITIVES,
+      variableName: parts.join("/"),
+    };
+  }
+
+  if (parts[0] === "text") {
+    return {
+      collectionName: COLLECTIONS.SEMANTIC,
+      variableName: parts.join("/"),
+    };
+  }
+
+  throw new Error("Unsupported token reference: " + ref + ".");
 }
 
 function collectionKey(collectionName, variableName) {
-  return `${collectionName}::${variableName}`;
-}
-
-function styleKey(groupKey, tokenKey) {
-  return `${groupKey}::${tokenKey}`;
+  return collectionName + "::" + variableName;
 }
 
 function sortScopes(scopes) {
@@ -231,17 +407,31 @@ function sortScopes(scopes) {
 }
 
 function resolveTokenRef(tokens, ref) {
-  const path = tokenRefToVariableName(ref).split("/");
+  const path = tokenRefToPath(ref).split("/");
   let current = tokens;
 
-  for (const segment of path) {
+  path.forEach(function (segment) {
     current = current[segment];
-  }
+  });
 
   return current;
 }
 
-function getTextStyleName(groupKey, tokenKey) {
+function hexToRgba(hex) {
+  const normalized = hex.replace("#", "");
+  const red = parseInt(normalized.slice(0, 2), 16) / 255;
+  const green = parseInt(normalized.slice(2, 4), 16) / 255;
+  const blue = parseInt(normalized.slice(4, 6), 16) / 255;
+
+  return {
+    r: red,
+    g: green,
+    b: blue,
+    a: 1,
+  };
+}
+
+function getTextStyleName(groupKey, tokenKey, weightSuffix) {
   if (groupKey === "body") {
     const bodyNames = {
       sm: "Body/Small",
@@ -249,14 +439,14 @@ function getTextStyleName(groupKey, tokenKey) {
       lg: "Body/Large",
     };
 
-    return `${TEXT_STYLE_PREFIX}/${bodyNames[tokenKey]}`;
+    return TEXT_STYLE_PREFIX + "/" + bodyNames[tokenKey] + weightSuffix;
   }
 
-  return `${TEXT_STYLE_PREFIX}/Heading/${tokenKey.toUpperCase()}`;
+  return TEXT_STYLE_PREFIX + "/Heading/" + tokenKey.toUpperCase();
 }
 
-function toPrimitiveDefinitions(tokens) {
-  return [
+function toTypographyPrimitiveDefinitions(tokens) {
+  const definitions = [
     {
       collectionName: COLLECTIONS.PRIMITIVES,
       name: "font/family/primary",
@@ -266,94 +456,228 @@ function toPrimitiveDefinitions(tokens) {
         value: tokens.font.family.primary,
       },
     },
-    ...Object.entries(tokens.font.size).map(([key, value]) => ({
+  ];
+
+  Object.entries(tokens.font.size).forEach(function (entry) {
+    definitions.push({
       collectionName: COLLECTIONS.PRIMITIVES,
-      name: `font/size/${key}`,
+      name: "font/size/" + entry[0],
       resolvedType: "FLOAT",
       scopes: PRIMITIVE_SCOPE_CONFIG.size,
       value: {
         kind: "RAW",
-        value,
+        value: entry[1],
       },
-    })),
-    ...Object.entries(tokens.font.lineHeight).map(([key, value]) => ({
+    });
+  });
+
+  Object.entries(tokens.font.lineHeight).forEach(function (entry) {
+    definitions.push({
       collectionName: COLLECTIONS.PRIMITIVES,
-      name: `font/lineHeight/${key}`,
+      name: "font/lineHeight/" + entry[0],
       resolvedType: "FLOAT",
       scopes: PRIMITIVE_SCOPE_CONFIG.lineHeight,
       value: {
         kind: "RAW",
-        value,
+        value: entry[1],
       },
-    })),
-    ...Object.entries(tokens.font.weight).map(([key, value]) => ({
+    });
+  });
+
+  Object.entries(tokens.font.weight).forEach(function (entry) {
+    definitions.push({
       collectionName: COLLECTIONS.PRIMITIVES,
-      name: `font/weight/${key}`,
+      name: "font/weight/" + entry[0],
       resolvedType: "FLOAT",
       scopes: PRIMITIVE_SCOPE_CONFIG.weight,
       value: {
         kind: "RAW",
-        value,
+        value: entry[1],
       },
-    })),
-  ];
-}
-
-function toSemanticDefinitions(tokens) {
-  const definitions = [];
-
-  for (const [groupKey, groupTokens] of Object.entries(tokens.text)) {
-    for (const [tokenKey, tokenValues] of Object.entries(groupTokens)) {
-      for (const [propertyKey, propertyConfig] of Object.entries(SEMANTIC_PROPERTY_CONFIG)) {
-        definitions.push({
-          collectionName: COLLECTIONS.SEMANTIC,
-          name: `text/${groupKey}/${tokenKey}/${propertyKey}`,
-          resolvedType: propertyConfig.resolvedType,
-          scopes: propertyConfig.scopes,
-          value: {
-            kind: "ALIAS",
-            targetName: tokenRefToVariableName(tokenValues[propertyKey]),
-          },
-        });
-      }
-    }
-  }
+    });
+  });
 
   return definitions;
 }
 
-function toTextStyleDefinitions(tokens) {
+function toTypographySemanticDefinitions(tokens) {
   const definitions = [];
 
-  for (const [groupKey, groupTokens] of Object.entries(tokens.text)) {
-    for (const [tokenKey, tokenValues] of Object.entries(groupTokens)) {
-      definitions.push({
-        name: getTextStyleName(groupKey, tokenKey),
-        fontFamilyRef: "font/family/primary",
-        sizeRef: `text/${groupKey}/${tokenKey}/size`,
-        lineHeightRef: `text/${groupKey}/${tokenKey}/lineHeight`,
-        weightRef: `text/${groupKey}/${tokenKey}/weight`,
+  Object.entries(tokens.text).forEach(function (groupEntry) {
+    const groupKey = groupEntry[0];
+    const groupTokens = groupEntry[1];
+
+    Object.entries(groupTokens).forEach(function (tokenEntry) {
+      const tokenKey = tokenEntry[0];
+      const tokenValues = tokenEntry[1];
+
+      Object.entries(SEMANTIC_PROPERTY_CONFIG).forEach(function (propertyEntry) {
+        const propertyKey = propertyEntry[0];
+        const propertyConfig = propertyEntry[1];
+        const target = tokenRefToVariableTarget(tokenValues[propertyKey]);
+
+        definitions.push({
+          collectionName: COLLECTIONS.SEMANTIC,
+          name: "text/" + groupKey + "/" + tokenKey + "/" + propertyKey,
+          resolvedType: propertyConfig.resolvedType,
+          scopes: propertyConfig.scopes,
+          value: {
+            kind: "ALIAS",
+            targetCollectionName: target.collectionName,
+            targetName: target.variableName,
+          },
+        });
+      });
+    });
+  });
+
+  return definitions;
+}
+
+function toTypographyTextStyleDefinitions(tokens) {
+  const definitions = [];
+  const bodyWeightVariants = [
+    {
+      suffix: "/Default",
+      weightVariableKey: collectionKey(COLLECTIONS.SEMANTIC, "text/body/%TOKEN%/weight"),
+    },
+    {
+      suffix: "/Semibold",
+      weightVariableKey: collectionKey(COLLECTIONS.PRIMITIVES, "font/weight/semibold"),
+    },
+    {
+      suffix: "/Bold",
+      weightVariableKey: collectionKey(COLLECTIONS.PRIMITIVES, "font/weight/bold"),
+    },
+  ];
+
+  Object.entries(tokens.text).forEach(function (groupEntry) {
+    const groupKey = groupEntry[0];
+    const groupTokens = groupEntry[1];
+
+    Object.entries(groupTokens).forEach(function (tokenEntry) {
+      const tokenKey = tokenEntry[0];
+      const tokenValues = tokenEntry[1];
+
+      const baseDefinition = {
+        fontFamilyVariableKey: collectionKey(COLLECTIONS.PRIMITIVES, "font/family/primary"),
+        sizeVariableKey: collectionKey(COLLECTIONS.SEMANTIC, "text/" + groupKey + "/" + tokenKey + "/size"),
+        lineHeightVariableKey: collectionKey(
+          COLLECTIONS.SEMANTIC,
+          "text/" + groupKey + "/" + tokenKey + "/lineHeight",
+        ),
         fallbackFamily: tokens.font.family.primary,
         fallbackSize: resolveTokenRef(tokens, tokenValues.size),
         fallbackLineHeight: resolveTokenRef(tokens, tokenValues.lineHeight),
-      });
-    }
-  }
+      };
 
+      if (groupKey === "body") {
+        bodyWeightVariants.forEach(function (variant) {
+          definitions.push({
+            name: getTextStyleName(groupKey, tokenKey, variant.suffix),
+            fontFamilyVariableKey: baseDefinition.fontFamilyVariableKey,
+            sizeVariableKey: baseDefinition.sizeVariableKey,
+            lineHeightVariableKey: baseDefinition.lineHeightVariableKey,
+            weightVariableKey: variant.weightVariableKey.replace("%TOKEN%", tokenKey),
+            fallbackFamily: baseDefinition.fallbackFamily,
+            fallbackSize: baseDefinition.fallbackSize,
+            fallbackLineHeight: baseDefinition.fallbackLineHeight,
+          });
+        });
+        return;
+      }
+
+      definitions.push({
+        name: getTextStyleName(groupKey, tokenKey, ""),
+        fontFamilyVariableKey: baseDefinition.fontFamilyVariableKey,
+        sizeVariableKey: baseDefinition.sizeVariableKey,
+        lineHeightVariableKey: baseDefinition.lineHeightVariableKey,
+        weightVariableKey: collectionKey(COLLECTIONS.SEMANTIC, "text/" + groupKey + "/" + tokenKey + "/weight"),
+        fallbackFamily: baseDefinition.fallbackFamily,
+        fallbackSize: baseDefinition.fallbackSize,
+        fallbackLineHeight: baseDefinition.fallbackLineHeight,
+      });
+    });
+  });
+
+  return definitions;
+}
+
+function toColorPrimitiveDefinitions(tokens) {
+  const definitions = [];
+
+  Object.entries(tokens.color.primitive).forEach(function (paletteEntry) {
+    const paletteName = paletteEntry[0];
+    const paletteValues = paletteEntry[1];
+
+    Object.entries(paletteValues).forEach(function (stepEntry) {
+      const stepKey = stepEntry[0];
+      const value = stepEntry[1];
+
+      definitions.push({
+        collectionName: COLLECTIONS.PRIMITIVES,
+        name: "color/" + paletteName + "/" + stepKey,
+        resolvedType: "COLOR",
+        value: {
+          kind: "RAW",
+          value: hexToRgba(value),
+        },
+      });
+    });
+  });
+
+  return definitions;
+}
+
+function collectColorSemanticDefinitions(node, pathParts, definitions) {
+  Object.entries(node).forEach(function (entry) {
+    const key = entry[0];
+    const value = entry[1];
+
+    if (isPlainObject(value)) {
+      collectColorSemanticDefinitions(value, pathParts.concat([key]), definitions);
+      return;
+    }
+
+    const target = tokenRefToVariableTarget(value);
+    definitions.push({
+      collectionName: COLLECTIONS.SEMANTIC,
+      name: "color/" + pathParts.concat([key]).join("/"),
+      resolvedType: "COLOR",
+      value: {
+        kind: "ALIAS",
+        targetCollectionName: target.collectionName,
+        targetName: target.variableName,
+      },
+    });
+  });
+}
+
+function toColorSemanticDefinitions(tokens) {
+  const definitions = [];
+  collectColorSemanticDefinitions(tokens.color.semantic, [], definitions);
   return definitions;
 }
 
 async function getOrCreateCollections(collectionNames) {
   const collections = await figma.variables.getLocalVariableCollectionsAsync();
-  const collectionMap = new Map(collections.map((collection) => [collection.name, collection]));
+  const collectionMap = new Map();
 
-  for (const collectionName of collectionNames) {
+  collections.forEach(function (collection) {
+    collectionMap.set(collection.name, collection);
+  });
+
+  for (let index = 0; index < collectionNames.length; index += 1) {
+    const collectionName = collectionNames[index];
+
     if (collectionMap.has(collectionName)) {
       continue;
     }
 
     const collection = figma.variables.createVariableCollection(collectionName);
-    const defaultMode = collection.modes.find((mode) => mode.name === DEFAULT_MODE_NAME);
+    const defaultMode = collection.modes.find(function (mode) {
+      return mode.name === DEFAULT_MODE_NAME;
+    });
 
     if (defaultMode == null && collection.modes.length > 0) {
       collection.renameMode(collection.modes[0].modeId, DEFAULT_MODE_NAME);
@@ -364,17 +688,20 @@ async function getOrCreateCollections(collectionNames) {
 
   const resolvedCollections = {};
 
-  for (const collectionName of collectionNames) {
+  collectionNames.forEach(function (collectionName) {
     const collection = collectionMap.get(collectionName);
-    assert(collection, `Missing collection ${collectionName}.`);
+    assert(collection, "Missing collection " + collectionName + ".");
 
     resolvedCollections[collectionName] = {
-      collection,
+      collection: collection,
       modeId: collection.defaultModeId || (collection.modes[0] ? collection.modes[0].modeId : null),
     };
 
-    assert(resolvedCollections[collectionName].modeId, `Collection ${collectionName} must have one mode.`);
-  }
+    assert(
+      resolvedCollections[collectionName].modeId,
+      "Collection " + collectionName + " must have one mode.",
+    );
+  });
 
   return resolvedCollections;
 }
@@ -383,7 +710,8 @@ async function getExistingVariables(collectionsByName) {
   const variables = [];
 
   for (const collectionInfo of Object.values(collectionsByName)) {
-    for (const variableId of collectionInfo.collection.variableIds) {
+    for (let index = 0; index < collectionInfo.collection.variableIds.length; index += 1) {
+      const variableId = collectionInfo.collection.variableIds[index];
       const variable = await figma.variables.getVariableByIdAsync(variableId);
 
       if (variable) {
@@ -396,37 +724,99 @@ async function getExistingVariables(collectionsByName) {
 }
 
 function buildExistingVariableMap(existingVariables, collectionsByName) {
-  const collectionNameById = new Map(
-    Object.entries(collectionsByName).map(([collectionName, value]) => [value.collection.id, collectionName]),
-  );
+  const collectionNameById = new Map();
+
+  Object.entries(collectionsByName).forEach(function (entry) {
+    collectionNameById.set(entry[1].collection.id, entry[0]);
+  });
 
   return new Map(
-    existingVariables.map((variable) => [
-      collectionKey(collectionNameById.get(variable.variableCollectionId), variable.name),
-      variable,
-    ]),
+    existingVariables.map(function (variable) {
+      return [
+        collectionKey(collectionNameById.get(variable.variableCollectionId), variable.name),
+        variable,
+      ];
+    }),
   );
 }
 
-function removeObsoleteSemanticFamilyVariables(existingVariables, collectionsByName) {
-  const semanticCollectionId = collectionsByName[COLLECTIONS.SEMANTIC].collection.id;
-  const familyPattern = /^text\/(body|heading)\/[^/]+\/family$/;
+function removeObsoleteVariables(existingVariables, desiredVariableKeys, collectionsByName, managedPrefixesByCollection) {
+  const collectionNameById = new Map();
   let removedCount = 0;
 
-  for (const variable of existingVariables) {
-    if (variable.variableCollectionId !== semanticCollectionId) {
-      continue;
+  Object.entries(collectionsByName).forEach(function (entry) {
+    collectionNameById.set(entry[1].collection.id, entry[0]);
+  });
+
+  existingVariables.forEach(function (variable) {
+    const collectionName = collectionNameById.get(variable.variableCollectionId);
+    const managedPrefixes = managedPrefixesByCollection[collectionName];
+
+    if (!managedPrefixes) {
+      return;
     }
 
-    if (!familyPattern.test(variable.name)) {
-      continue;
+    const isManaged = managedPrefixes.some(function (prefix) {
+      return variable.name.indexOf(prefix) === 0;
+    });
+
+    if (!isManaged) {
+      return;
+    }
+
+    const key = collectionKey(collectionName, variable.name);
+
+    if (desiredVariableKeys.has(key)) {
+      return;
     }
 
     if (typeof variable.remove === "function") {
       variable.remove();
       removedCount += 1;
     }
+  });
+
+  return removedCount;
+}
+
+async function getOrCreateTextStyles() {
+  const styles = await figma.getLocalTextStylesAsync();
+  return new Map(
+    styles.map(function (style) {
+      return [style.name, style];
+    }),
+  );
+}
+
+function getOrCreateTextStyle(styleDefinition, existingStyleMap) {
+  if (existingStyleMap.has(styleDefinition.name)) {
+    return existingStyleMap.get(styleDefinition.name);
   }
+
+  const style = figma.createTextStyle();
+  style.name = styleDefinition.name;
+  existingStyleMap.set(styleDefinition.name, style);
+  return style;
+}
+
+async function removeObsoleteTextStyles(desiredStyleNames) {
+  const styles = await figma.getLocalTextStylesAsync();
+  let removedCount = 0;
+
+  styles.forEach(function (style) {
+    if (style.name.indexOf(TEXT_STYLE_PREFIX + "/") !== 0) {
+      return;
+    }
+
+    if (desiredStyleNames.has(style.name)) {
+      return;
+    }
+
+    if (typeof style.remove === "function") {
+      style.remove();
+      removedCount += 1;
+    }
+  });
 
   return removedCount;
 }
@@ -438,7 +828,15 @@ function getOrCreateVariable(definition, collectionsByName, existingVariableMap)
   if (existingVariable) {
     assert(
       existingVariable.resolvedType === definition.resolvedType,
-      `Variable ${definition.name} already exists in ${definition.collectionName} with type ${existingVariable.resolvedType}, expected ${definition.resolvedType}.`,
+      "Variable " +
+        definition.name +
+        " already exists in " +
+        definition.collectionName +
+        " with type " +
+        existingVariable.resolvedType +
+        ", expected " +
+        definition.resolvedType +
+        ".",
     );
 
     const nextScopes = sortScopes(definition.scopes);
@@ -462,37 +860,68 @@ function getOrCreateVariable(definition, collectionsByName, existingVariableMap)
   return variable;
 }
 
-async function getOrCreateTextStyles() {
-  const styles = await figma.getLocalTextStylesAsync();
-  return new Map(styles.map((style) => [style.name, style]));
-}
+async function syncVariableDefinitions(definitions, managedPrefixesByCollection) {
+  const collectionsByName = await getOrCreateCollections([COLLECTIONS.PRIMITIVES, COLLECTIONS.SEMANTIC]);
+  const existingVariables = await getExistingVariables(collectionsByName);
+  const existingVariableMap = buildExistingVariableMap(existingVariables, collectionsByName);
+  const syncedVariables = new Map();
+  const desiredVariableKeys = new Set();
 
-function getOrCreateTextStyle(styleDefinition, existingStyleMap) {
-  if (existingStyleMap.has(styleDefinition.name)) {
-    return existingStyleMap.get(styleDefinition.name);
-  }
+  definitions.forEach(function (definition) {
+    desiredVariableKeys.add(collectionKey(definition.collectionName, definition.name));
+    const variable = getOrCreateVariable(definition, collectionsByName, existingVariableMap);
+    syncedVariables.set(collectionKey(definition.collectionName, definition.name), variable);
+  });
 
-  const style = figma.createTextStyle();
-  style.name = styleDefinition.name;
-  existingStyleMap.set(styleDefinition.name, style);
-  return style;
+  definitions.forEach(function (definition) {
+    const variable = syncedVariables.get(collectionKey(definition.collectionName, definition.name));
+    const modeId = collectionsByName[definition.collectionName].modeId;
+
+    if (definition.value.kind === "ALIAS") {
+      const targetVariable = syncedVariables.get(
+        collectionKey(definition.value.targetCollectionName, definition.value.targetName),
+      );
+      assert(targetVariable, "Missing alias target " + definition.value.targetName + ".");
+      variable.setValueForMode(modeId, figma.variables.createVariableAlias(targetVariable));
+      return;
+    }
+
+    variable.setValueForMode(modeId, definition.value.value);
+  });
+
+  const refreshedVariables = await getExistingVariables(collectionsByName);
+  const removedVariableCount = removeObsoleteVariables(
+    refreshedVariables,
+    desiredVariableKeys,
+    collectionsByName,
+    managedPrefixesByCollection,
+  );
+
+  return {
+    collectionsByName: collectionsByName,
+    syncedVariables: syncedVariables,
+    removedVariableCount: removedVariableCount,
+  };
 }
 
 async function syncTextStyles(styleDefinitions, syncedVariables) {
   const existingStyleMap = await getOrCreateTextStyles();
   await figma.loadFontAsync({ family: "Inter", style: "Regular" });
 
-  for (const styleDefinition of styleDefinitions) {
+  styleDefinitions.forEach(function (styleDefinition) {
     const style = getOrCreateTextStyle(styleDefinition, existingStyleMap);
-    const familyVariable = syncedVariables.get(collectionKey(COLLECTIONS.PRIMITIVES, styleDefinition.fontFamilyRef));
-    const sizeVariable = syncedVariables.get(collectionKey(COLLECTIONS.SEMANTIC, styleDefinition.sizeRef));
-    const lineHeightVariable = syncedVariables.get(collectionKey(COLLECTIONS.SEMANTIC, styleDefinition.lineHeightRef));
-    const weightVariable = syncedVariables.get(collectionKey(COLLECTIONS.SEMANTIC, styleDefinition.weightRef));
+    const familyVariable = syncedVariables.get(styleDefinition.fontFamilyVariableKey);
+    const sizeVariable = syncedVariables.get(styleDefinition.sizeVariableKey);
+    const lineHeightVariable = syncedVariables.get(styleDefinition.lineHeightVariableKey);
+    const weightVariable = syncedVariables.get(styleDefinition.weightVariableKey);
 
-    assert(familyVariable, `Missing primitive family variable ${styleDefinition.fontFamilyRef}.`);
-    assert(sizeVariable, `Missing semantic size variable ${styleDefinition.sizeRef}.`);
-    assert(lineHeightVariable, `Missing semantic line-height variable ${styleDefinition.lineHeightRef}.`);
-    assert(weightVariable, `Missing semantic weight variable ${styleDefinition.weightRef}.`);
+    assert(familyVariable, "Missing family variable for text style " + styleDefinition.name + ".");
+    assert(sizeVariable, "Missing size variable for text style " + styleDefinition.name + ".");
+    assert(
+      lineHeightVariable,
+      "Missing line-height variable for text style " + styleDefinition.name + ".",
+    );
+    assert(weightVariable, "Missing weight variable for text style " + styleDefinition.name + ".");
 
     style.fontName = {
       family: styleDefinition.fallbackFamily,
@@ -508,47 +937,49 @@ async function syncTextStyles(styleDefinitions, syncedVariables) {
     style.setBoundVariable("lineHeight", lineHeightVariable);
     style.setBoundVariable("fontWeight", weightVariable);
     style.description = "Generated from typography variables.";
-  }
+  });
 }
 
 async function syncTypography(tokens) {
-  const primitiveDefinitions = toPrimitiveDefinitions(tokens);
-  const semanticDefinitions = toSemanticDefinitions(tokens);
-  const textStyleDefinitions = toTextStyleDefinitions(tokens);
-  const definitions = primitiveDefinitions.concat(semanticDefinitions);
-  const collectionsByName = await getOrCreateCollections([COLLECTIONS.PRIMITIVES, COLLECTIONS.SEMANTIC]);
-  const existingVariables = await getExistingVariables(collectionsByName);
-  const removedObsoleteCount = removeObsoleteSemanticFamilyVariables(existingVariables, collectionsByName);
-  const refreshedExistingVariables = removedObsoleteCount > 0 ? await getExistingVariables(collectionsByName) : existingVariables;
-  const existingVariableMap = buildExistingVariableMap(refreshedExistingVariables, collectionsByName);
-  const syncedVariables = new Map();
+  const primitiveDefinitions = toTypographyPrimitiveDefinitions(tokens);
+  const semanticDefinitions = toTypographySemanticDefinitions(tokens);
+  const textStyleDefinitions = toTypographyTextStyleDefinitions(tokens);
+  const variableDefinitions = primitiveDefinitions.concat(semanticDefinitions);
+  const syncResult = await syncVariableDefinitions(variableDefinitions, {
+    Primitives: ["font/"],
+    Semantic: ["text/"],
+  });
+  const desiredStyleNames = new Set(
+    textStyleDefinitions.map(function (definition) {
+      return definition.name;
+    }),
+  );
 
-  for (const definition of definitions) {
-    const variable = getOrCreateVariable(definition, collectionsByName, existingVariableMap);
-    syncedVariables.set(collectionKey(definition.collectionName, definition.name), variable);
-  }
-
-  for (const definition of definitions) {
-    const variable = syncedVariables.get(collectionKey(definition.collectionName, definition.name));
-    const modeId = collectionsByName[definition.collectionName].modeId;
-
-    if (definition.value.kind === "ALIAS") {
-      const targetVariable = syncedVariables.get(collectionKey(COLLECTIONS.PRIMITIVES, definition.value.targetName));
-      assert(targetVariable, `Missing primitive target ${definition.value.targetName}.`);
-      variable.setValueForMode(modeId, figma.variables.createVariableAlias(targetVariable));
-    } else {
-      variable.setValueForMode(modeId, definition.value.value);
-    }
-  }
-
-  await syncTextStyles(textStyleDefinitions, syncedVariables);
+  await syncTextStyles(textStyleDefinitions, syncResult.syncedVariables);
+  const removedTextStyleCount = await removeObsoleteTextStyles(desiredStyleNames);
 
   return {
     primitiveCount: primitiveDefinitions.length,
     semanticCount: semanticDefinitions.length,
     textStyleCount: textStyleDefinitions.length,
     presetCount: Object.keys(tokens.text.body).length + Object.keys(tokens.text.heading).length,
-    removedObsoleteCount,
+    removedVariableCount: syncResult.removedVariableCount,
+    removedTextStyleCount: removedTextStyleCount,
   };
 }
 
+async function syncColors(tokens) {
+  const primitiveDefinitions = toColorPrimitiveDefinitions(tokens);
+  const semanticDefinitions = toColorSemanticDefinitions(tokens);
+  const variableDefinitions = primitiveDefinitions.concat(semanticDefinitions);
+  const syncResult = await syncVariableDefinitions(variableDefinitions, {
+    Primitives: ["color/"],
+    Semantic: ["color/"],
+  });
+
+  return {
+    primitiveCount: primitiveDefinitions.length,
+    semanticCount: semanticDefinitions.length,
+    removedVariableCount: syncResult.removedVariableCount,
+  };
+}

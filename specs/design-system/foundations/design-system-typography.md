@@ -1,7 +1,8 @@
----
+﻿---
 project: Gestão de projetos
 author: Vinicius Bispo
-document: design system
+type: design system
+document: typography
 version: 1.0
 ---
 
