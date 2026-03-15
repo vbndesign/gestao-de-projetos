@@ -32,6 +32,7 @@ The color system prioritizes:
 - clear semantic meaning
 - stable naming independent of framework
 - explicit primitive palettes
+- reuse through global semantic families before component-specific values
 - compatibility with future parsers and adapters
 - support for future auxiliary palettes
 
@@ -48,6 +49,10 @@ Primitive colors are the raw palettes of the system.
 They must use the exact hexadecimal values defined by the design source.
 
 No color value should be inferred, interpolated, or calculated.
+
+## Common
+
+transparent: #00000000
 
 ## Brand
 
@@ -110,13 +115,100 @@ No color value should be inferred, interpolated, or calculated.
 
 ---
 
-# Semantic Color Roles
+# Semantic Layers
 
-Semantic tokens define how colors are used in the interface.
+Color tokens follow a three-layer architecture.
 
-They must reference primitive tokens.
+Primitive tokens:
+- raw hexadecimal values only
 
-Semantic tokens are intentionally independent from Tailwind or shadcn naming.
+Global semantic tokens:
+- reusable semantic aliases shared across the design system
+- split into `family` and `role`
+
+Component semantic tokens:
+- tokens specialized for reusable components
+- should prefer global semantic tokens over direct primitive references
+
+---
+
+# Global Semantic Families
+
+The `family` layer standardizes reusable intensities for each palette.
+
+This layer exists to prevent components from referencing primitive scales directly in most cases.
+
+## Family
+
+color.semantic.family.common.transparent
+
+color.semantic.family.brand.subtle
+color.semantic.family.brand.light
+color.semantic.family.brand.soft
+color.semantic.family.brand.pure
+color.semantic.family.brand.strong
+
+color.semantic.family.neutral.pure
+color.semantic.family.neutral.subtle
+color.semantic.family.neutral.soft
+color.semantic.family.neutral.border
+color.semantic.family.neutral.muted
+color.semantic.family.neutral.medium
+color.semantic.family.neutral.body
+color.semantic.family.neutral.strong
+color.semantic.family.neutral.inverse
+
+color.semantic.family.success.light
+color.semantic.family.success.soft
+color.semantic.family.success.pure
+color.semantic.family.success.strong
+
+color.semantic.family.green.light
+color.semantic.family.green.strong
+
+color.semantic.family.warning.light
+color.semantic.family.warning.soft
+color.semantic.family.warning.pure
+color.semantic.family.warning.strong
+
+color.semantic.family.danger.light
+color.semantic.family.danger.soft
+color.semantic.family.danger.pure
+color.semantic.family.danger.strong
+
+color.semantic.family.red.light
+color.semantic.family.red.strong
+
+color.semantic.family.info.light
+color.semantic.family.info.soft
+color.semantic.family.info.pure
+color.semantic.family.info.strong
+
+color.semantic.family.indigo.light
+color.semantic.family.indigo.strong
+
+color.semantic.family.yellow.light
+color.semantic.family.yellow.strong
+
+color.semantic.family.pink.light
+color.semantic.family.pink.strong
+
+color.semantic.family.sky.light
+color.semantic.family.sky.strong
+
+The support families `indigo`, `yellow`, `pink`, and `sky` are semantic-level families.
+
+They intentionally stay outside the primitive core palettes until they become broad enough to justify their own raw scales.
+
+The `green` and `red` families are semantic aliases over `success` and `danger`.
+
+They exist to support color-oriented component APIs without duplicating raw primitive palettes.
+
+---
+
+# Global Semantic Roles
+
+Role tokens describe generic interface use and should preferably reference `family`.
 
 ## Background
 
@@ -167,29 +259,100 @@ color.semantic.feedback.info.border
 
 ---
 
-# Token Architecture
+# Component Layer
 
-Color tokens follow a two-layer architecture.
+The component layer defines colors for reusable UI patterns.
 
-Primitive tokens:
-color.primitive.brand.*
-color.primitive.neutral.*
-color.primitive.success.*
-color.primitive.warning.*
-color.primitive.danger.*
-color.primitive.info.*
+Component tokens should reference:
+1. role tokens first
+2. family tokens second
+3. primitive tokens only as an exception
 
-Semantic tokens:
-color.semantic.bg.*
-color.semantic.text.*
-color.semantic.border.*
-color.semantic.feedback.*
+## Component State Guidance
 
-Semantic tokens reference primitive tokens.
+Component tokens may be separated by state when the visual color changes between states.
 
-Example:
-color.semantic.bg.canvas
-color.primitive.neutral.0
+Stateful color tokens are valid because they define the design contract, while CSS controls when the state is applied.
+
+To prevent uncontrolled growth:
+- only add a state when the color actually changes
+- prefer canonical states such as `default`, `hover`, `active`, `disabled`, and `focus`
+- do not duplicate state branches for components that do not need them
+
+## Component Tokens
+
+color.semantic.component.menuItem.default.bg
+color.semantic.component.menuItem.default.icon
+color.semantic.component.menuItem.default.text
+color.semantic.component.menuItem.hover.bg
+color.semantic.component.menuItem.hover.icon
+color.semantic.component.menuItem.hover.text
+color.semantic.component.menuItem.active.bg
+color.semantic.component.menuItem.active.icon
+color.semantic.component.menuItem.active.text
+
+color.semantic.component.projectSummaryCard.bg
+color.semantic.component.projectSummaryCard.title
+color.semantic.component.projectSummaryCard.label
+
+color.semantic.component.button.primary.default.bg
+color.semantic.component.button.primary.default.text
+color.semantic.component.button.primary.default.icon
+color.semantic.component.button.primary.hover.bg
+color.semantic.component.button.primary.hover.text
+color.semantic.component.button.primary.hover.icon
+
+color.semantic.component.button.primaryOutline.default.bg
+color.semantic.component.button.primaryOutline.default.text
+color.semantic.component.button.primaryOutline.default.icon
+color.semantic.component.button.primaryOutline.default.border
+color.semantic.component.button.primaryOutline.hover.bg
+color.semantic.component.button.primaryOutline.hover.text
+color.semantic.component.button.primaryOutline.hover.icon
+color.semantic.component.button.primaryOutline.hover.border
+
+color.semantic.component.badge.purple.bg
+color.semantic.component.badge.purple.text
+color.semantic.component.badge.indigo.bg
+color.semantic.component.badge.indigo.text
+color.semantic.component.badge.yellow.bg
+color.semantic.component.badge.yellow.text
+color.semantic.component.badge.pink.bg
+color.semantic.component.badge.pink.text
+color.semantic.component.badge.green.bg
+color.semantic.component.badge.green.text
+color.semantic.component.badge.sky.bg
+color.semantic.component.badge.sky.text
+color.semantic.component.badge.red.bg
+color.semantic.component.badge.red.text
+
+color.semantic.component.iconTile.purple.bg
+color.semantic.component.iconTile.purple.icon
+color.semantic.component.iconTile.indigo.bg
+color.semantic.component.iconTile.indigo.icon
+color.semantic.component.iconTile.yellow.bg
+color.semantic.component.iconTile.yellow.icon
+color.semantic.component.iconTile.pink.bg
+color.semantic.component.iconTile.pink.icon
+color.semantic.component.iconTile.green.bg
+color.semantic.component.iconTile.green.icon
+color.semantic.component.iconTile.sky.bg
+color.semantic.component.iconTile.sky.icon
+color.semantic.component.iconTile.red.bg
+color.semantic.component.iconTile.red.icon
+
+color.semantic.component.dataRow.header.bg
+color.semantic.component.dataRow.header.text
+color.semantic.component.dataRow.default.bg
+color.semantic.component.dataRow.default.border
+color.semantic.component.dataRow.default.title
+color.semantic.component.dataRow.hover.bg
+color.semantic.component.dataRow.hover.border
+color.semantic.component.dataRow.hover.title
+color.semantic.component.dataRow.actionIcon.default.bg
+color.semantic.component.dataRow.actionIcon.default.icon
+color.semantic.component.dataRow.actionIcon.hover.bg
+color.semantic.component.dataRow.actionIcon.hover.icon
 
 ---
 
@@ -203,6 +366,9 @@ Example:
 {
   "color": {
     "primitive": {
+      "common": {
+        "transparent": "#00000000"
+      },
       "brand": {
         "900": "#332250",
         "800": "#3C2861",
@@ -258,52 +424,261 @@ Example:
       }
     },
     "semantic": {
+      "family": {
+        "common": {
+          "transparent": "{color.primitive.common.transparent}"
+        },
+        "brand": {
+          "subtle": "{color.primitive.brand.50}",
+          "light": "{color.primitive.brand.100}",
+          "soft": "{color.primitive.brand.200}",
+          "pure": "{color.primitive.brand.500}",
+          "strong": "{color.primitive.brand.600}"
+        },
+        "neutral": {
+          "pure": "{color.primitive.neutral.0}",
+          "subtle": "{color.primitive.neutral.50}",
+          "soft": "{color.primitive.neutral.100}",
+          "border": "{color.primitive.neutral.200}",
+          "muted": "{color.primitive.neutral.300}",
+          "medium": "{color.primitive.neutral.500}",
+          "body": "{color.primitive.neutral.600}",
+          "strong": "{color.primitive.neutral.700}",
+          "inverse": "{color.primitive.neutral.900}"
+        },
+        "success": {
+          "light": "{color.primitive.success.100}",
+          "soft": "{color.primitive.success.300}",
+          "pure": "{color.primitive.success.500}",
+          "strong": "{color.primitive.success.800}"
+        },
+        "green": {
+          "light": "{color.semantic.family.success.light}",
+          "strong": "{color.semantic.family.success.strong}"
+        },
+        "warning": {
+          "light": "{color.primitive.warning.100}",
+          "soft": "{color.primitive.warning.300}",
+          "pure": "{color.primitive.warning.500}",
+          "strong": "{color.primitive.warning.800}"
+        },
+        "danger": {
+          "light": "{color.primitive.danger.100}",
+          "soft": "{color.primitive.danger.300}",
+          "pure": "{color.primitive.danger.500}",
+          "strong": "{color.primitive.danger.800}"
+        },
+        "red": {
+          "light": "{color.semantic.family.danger.light}",
+          "strong": "{color.semantic.family.danger.strong}"
+        },
+        "info": {
+          "light": "{color.primitive.info.100}",
+          "soft": "{color.primitive.info.300}",
+          "pure": "{color.primitive.info.500}",
+          "strong": "{color.primitive.info.800}"
+        },
+        "indigo": {
+          "light": "#E6EAFE",
+          "strong": "#485ECC"
+        },
+        "yellow": {
+          "light": "#FFF8D5",
+          "strong": "#998836"
+        },
+        "pink": {
+          "light": "#FFD5F1",
+          "strong": "#993678"
+        },
+        "sky": {
+          "light": "#D5F1FF",
+          "strong": "#367899"
+        }
+      },
       "bg": {
-        "canvas": "{color.primitive.brand.50}",
-        "surface": "{color.primitive.neutral.0}",
-        "subtle": "{color.primitive.neutral.50}",
-        "brand": "{color.primitive.brand.500}",
-        "inverse": "{color.primitive.neutral.900}"
+        "canvas": "{color.semantic.family.brand.subtle}",
+        "surface": "{color.semantic.family.neutral.pure}",
+        "subtle": "{color.semantic.family.neutral.soft}",
+        "brand": "{color.semantic.family.brand.pure}",
+        "inverse": "{color.semantic.family.neutral.inverse}"
       },
       "text": {
-        "heading": "{color.primitive.neutral.700}",
-        "body": "{color.primitive.neutral.600}",
-        "muted": "{color.primitive.neutral.500}",
-        "placeholder": "{color.primitive.neutral.300}",
-        "disabled": "{color.primitive.neutral.300}"
+        "heading": "{color.semantic.family.neutral.strong}",
+        "body": "{color.semantic.family.neutral.body}",
+        "muted": "{color.semantic.family.neutral.medium}",
+        "placeholder": "{color.semantic.family.neutral.muted}",
+        "disabled": "{color.semantic.family.neutral.muted}"
       },
       "border": {
-        "default": "{color.primitive.neutral.200}",
-        "subtle": "{color.primitive.neutral.100}",
-        "strong": "{color.primitive.neutral.400}",
-        "brand": "{color.primitive.brand.500}",
-        "focus": "{color.primitive.brand.500}",
-        "inverse": "{color.primitive.neutral.700}"
+        "default": "{color.semantic.family.neutral.border}",
+        "subtle": "{color.semantic.family.neutral.soft}",
+        "strong": "{color.semantic.family.neutral.medium}",
+        "brand": "{color.semantic.family.brand.pure}",
+        "focus": "{color.semantic.family.brand.pure}",
+        "inverse": "{color.semantic.family.neutral.strong}"
       },
       "feedback": {
         "success": {
-          "bg": "{color.primitive.success.100}",
-          "surface": "{color.primitive.success.300}",
-          "text": "{color.primitive.success.800}",
-          "border": "{color.primitive.success.500}"
+          "bg": "{color.semantic.family.success.light}",
+          "surface": "{color.semantic.family.success.soft}",
+          "text": "{color.semantic.family.success.strong}",
+          "border": "{color.semantic.family.success.pure}"
         },
         "warning": {
-          "bg": "{color.primitive.warning.100}",
-          "surface": "{color.primitive.warning.300}",
-          "text": "{color.primitive.warning.800}",
-          "border": "{color.primitive.warning.500}"
+          "bg": "{color.semantic.family.warning.light}",
+          "surface": "{color.semantic.family.warning.soft}",
+          "text": "{color.semantic.family.warning.strong}",
+          "border": "{color.semantic.family.warning.pure}"
         },
         "danger": {
-          "bg": "{color.primitive.danger.100}",
-          "surface": "{color.primitive.danger.300}",
-          "text": "{color.primitive.danger.800}",
-          "border": "{color.primitive.danger.500}"
+          "bg": "{color.semantic.family.danger.light}",
+          "surface": "{color.semantic.family.danger.soft}",
+          "text": "{color.semantic.family.danger.strong}",
+          "border": "{color.semantic.family.danger.pure}"
         },
         "info": {
-          "bg": "{color.primitive.info.100}",
-          "surface": "{color.primitive.info.300}",
-          "text": "{color.primitive.info.800}",
-          "border": "{color.primitive.info.500}"
+          "bg": "{color.semantic.family.info.light}",
+          "surface": "{color.semantic.family.info.soft}",
+          "text": "{color.semantic.family.info.strong}",
+          "border": "{color.semantic.family.info.pure}"
+        }
+      },
+      "component": {
+        "menuItem": {
+          "default": {
+            "bg": "{color.semantic.bg.surface}",
+            "icon": "{color.semantic.family.brand.strong}",
+            "text": "{color.semantic.text.body}"
+          },
+          "hover": {
+            "bg": "{color.semantic.family.neutral.subtle}",
+            "icon": "{color.semantic.family.brand.strong}",
+            "text": "{color.semantic.text.body}"
+          },
+          "active": {
+            "bg": "{color.semantic.family.brand.pure}",
+            "icon": "{color.semantic.family.neutral.pure}",
+            "text": "{color.semantic.family.neutral.pure}"
+          }
+        },
+        "projectSummaryCard": {
+          "bg": "{color.semantic.family.brand.light}",
+          "title": "{color.semantic.family.brand.strong}",
+          "label": "{color.semantic.text.muted}"
+        },
+        "button": {
+          "primary": {
+            "default": {
+              "bg": "{color.semantic.bg.brand}",
+              "text": "{color.semantic.family.neutral.pure}",
+              "icon": "{color.semantic.family.neutral.pure}"
+            },
+            "hover": {
+              "bg": "{color.semantic.family.brand.strong}",
+              "text": "{color.semantic.family.neutral.pure}",
+              "icon": "{color.semantic.family.neutral.pure}"
+            }
+          },
+          "primaryOutline": {
+            "default": {
+              "bg": "{color.semantic.family.common.transparent}",
+              "text": "{color.semantic.family.brand.pure}",
+              "icon": "{color.semantic.family.brand.pure}",
+              "border": "{color.semantic.border.brand}"
+            },
+            "hover": {
+              "bg": "{color.semantic.family.brand.subtle}",
+              "text": "{color.semantic.family.brand.strong}",
+              "icon": "{color.semantic.family.brand.strong}",
+              "border": "{color.semantic.family.brand.strong}"
+            }
+          }
+        },
+        "badge": {
+          "purple": {
+            "bg": "{color.semantic.family.brand.light}",
+            "text": "{color.semantic.family.brand.pure}"
+          },
+          "indigo": {
+            "bg": "{color.semantic.family.indigo.light}",
+            "text": "{color.semantic.family.indigo.strong}"
+          },
+          "yellow": {
+            "bg": "{color.semantic.family.yellow.light}",
+            "text": "{color.semantic.family.yellow.strong}"
+          },
+          "pink": {
+            "bg": "{color.semantic.family.pink.light}",
+            "text": "{color.semantic.family.pink.strong}"
+          },
+          "green": {
+            "bg": "{color.semantic.family.green.light}",
+            "text": "{color.semantic.family.green.strong}"
+          },
+          "sky": {
+            "bg": "{color.semantic.family.sky.light}",
+            "text": "{color.semantic.family.sky.strong}"
+          },
+          "red": {
+            "bg": "{color.semantic.family.red.light}",
+            "text": "{color.semantic.family.red.strong}"
+          }
+        },
+        "iconTile": {
+          "purple": {
+            "bg": "{color.semantic.family.brand.light}",
+            "icon": "{color.semantic.family.brand.pure}"
+          },
+          "indigo": {
+            "bg": "{color.semantic.family.indigo.light}",
+            "icon": "{color.semantic.family.indigo.strong}"
+          },
+          "yellow": {
+            "bg": "{color.semantic.family.yellow.light}",
+            "icon": "{color.semantic.family.yellow.strong}"
+          },
+          "pink": {
+            "bg": "{color.semantic.family.pink.light}",
+            "icon": "{color.semantic.family.pink.strong}"
+          },
+          "green": {
+            "bg": "{color.semantic.family.green.light}",
+            "icon": "{color.semantic.family.green.strong}"
+          },
+          "sky": {
+            "bg": "{color.semantic.family.sky.light}",
+            "icon": "{color.semantic.family.sky.strong}"
+          },
+          "red": {
+            "bg": "{color.semantic.family.red.light}",
+            "icon": "{color.semantic.family.red.strong}"
+          }
+        },
+        "dataRow": {
+          "header": {
+            "bg": "{color.semantic.family.brand.subtle}",
+            "text": "{color.semantic.text.body}"
+          },
+          "default": {
+            "bg": "{color.semantic.bg.surface}",
+            "border": "{color.semantic.border.default}",
+            "title": "{color.semantic.family.brand.strong}"
+          },
+          "hover": {
+            "bg": "{color.semantic.family.brand.subtle}",
+            "border": "{color.semantic.family.brand.strong}",
+            "title": "{color.semantic.family.brand.strong}"
+          },
+          "actionIcon": {
+            "default": {
+              "bg": "{color.semantic.family.brand.light}",
+              "icon": "{color.semantic.family.brand.strong}"
+            },
+            "hover": {
+              "bg": "{color.semantic.family.brand.soft}",
+              "icon": "{color.semantic.family.brand.strong}"
+            }
+          }
         }
       }
     }
@@ -320,15 +695,21 @@ Color tokens must be synced into two Figma Variable Collections:
 - Semantic
 
 Primitive variable naming:
+- color/common/transparent
 - color/brand/900
 - color/neutral/0
 - color/success/500
 
 Semantic variable naming:
+- color/family/brand/pure
 - color/bg/canvas
 - color/text/heading
 - color/border/focus
 - color/feedback/success/bg
+- color/component/menuItem/active/bg
+- color/component/button/primary/default/bg
+- color/component/badge/purple/bg
+- color/component/dataRow/actionIcon/hover/icon
 
 ---
 
@@ -368,7 +749,9 @@ The primitive layer may grow with auxiliary palettes such as:
 - orange
 - cyan
 
-New primitive palettes should only become semantic tokens when they represent stable usage roles in the product.
+New primitive palettes should only become primitive families when they represent broad raw scales in the system.
+
+Smaller reusable tones may live in `semantic.family` until they justify promotion to `primitive`.
 
 ---
 
@@ -377,5 +760,5 @@ New primitive palettes should only become semantic tokens when they represent st
 The Codex agent must:
 1. Generate specs/design-system/tokens/colors.json using the structure above.
 2. Preserve exact hexadecimal values from the approved design source.
-3. Keep semantic tokens as aliases to primitive tokens.
+3. Keep global semantic roles and component tokens dependent on semantic families whenever possible.
 4. Treat the repository token JSON as the source of truth for Figma and code adapters.

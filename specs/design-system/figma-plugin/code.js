@@ -92,6 +92,7 @@ const EXPECTED_SEMANTIC_TEXT_TOKENS = {
 };
 
 const EXPECTED_COLOR_PRIMITIVE_KEYS = {
+  common: ["transparent"],
   brand: ["900", "800", "700", "600", "500", "400", "300", "200", "100", "50"],
   neutral: ["900", "800", "700", "600", "500", "400", "300", "200", "100", "50", "0"],
   success: ["800", "700", "500", "300", "100"],
@@ -101,6 +102,21 @@ const EXPECTED_COLOR_PRIMITIVE_KEYS = {
 };
 
 const EXPECTED_COLOR_SEMANTIC_KEYS = {
+  family: {
+    common: ["transparent"],
+    brand: ["subtle", "light", "soft", "pure", "strong"],
+    neutral: ["pure", "subtle", "soft", "border", "muted", "medium", "body", "strong", "inverse"],
+    success: ["light", "soft", "pure", "strong"],
+    green: ["light", "strong"],
+    warning: ["light", "soft", "pure", "strong"],
+    danger: ["light", "soft", "pure", "strong"],
+    red: ["light", "strong"],
+    info: ["light", "soft", "pure", "strong"],
+    indigo: ["light", "strong"],
+    yellow: ["light", "strong"],
+    pink: ["light", "strong"],
+    sky: ["light", "strong"],
+  },
   bg: ["canvas", "surface", "subtle", "brand", "inverse"],
   text: ["heading", "body", "muted", "placeholder", "disabled"],
   border: ["default", "subtle", "strong", "brand", "focus", "inverse"],
@@ -109,6 +125,51 @@ const EXPECTED_COLOR_SEMANTIC_KEYS = {
     warning: ["bg", "surface", "text", "border"],
     danger: ["bg", "surface", "text", "border"],
     info: ["bg", "surface", "text", "border"],
+  },
+  component: {
+    menuItem: {
+      default: ["bg", "icon", "text"],
+      hover: ["bg", "icon", "text"],
+      active: ["bg", "icon", "text"],
+    },
+    projectSummaryCard: ["bg", "title", "label"],
+    button: {
+      primary: {
+        default: ["bg", "text", "icon"],
+        hover: ["bg", "text", "icon"],
+      },
+      primaryOutline: {
+        default: ["bg", "text", "icon", "border"],
+        hover: ["bg", "text", "icon", "border"],
+      },
+    },
+    badge: {
+      purple: ["bg", "text"],
+      indigo: ["bg", "text"],
+      yellow: ["bg", "text"],
+      pink: ["bg", "text"],
+      green: ["bg", "text"],
+      sky: ["bg", "text"],
+      red: ["bg", "text"],
+    },
+    iconTile: {
+      purple: ["bg", "icon"],
+      indigo: ["bg", "icon"],
+      yellow: ["bg", "icon"],
+      pink: ["bg", "icon"],
+      green: ["bg", "icon"],
+      sky: ["bg", "icon"],
+      red: ["bg", "icon"],
+    },
+    dataRow: {
+      header: ["bg", "text"],
+      default: ["bg", "border", "title"],
+      hover: ["bg", "border", "title"],
+      actionIcon: {
+        default: ["bg", "icon"],
+        hover: ["bg", "icon"],
+      },
+    },
   },
 };
 
@@ -132,6 +193,8 @@ const PRIMITIVE_SCOPE_CONFIG = {
   lineHeight: ["LINE_HEIGHT"],
   weight: ["FONT_WEIGHT"],
 };
+
+const COLOR_SCOPES = ["ALL_SCOPES"];
 
 figma.showUI(__html__, {
   width: 560,
@@ -287,14 +350,47 @@ function validateTypographyTokens(tokens) {
 
 function validateHexColor(value, label) {
   assert(
-    /^#[0-9A-Fa-f]{6}$/.test(value),
-    label + " must be a 6-digit hexadecimal color.",
+    /^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$/.test(value),
+    label + " must be a 6-digit or 8-digit hexadecimal color.",
   );
+}
+
+function isHexColor(value) {
+  return typeof value === "string" && /^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$/.test(value);
 }
 
 function validateTokenRef(value, label, domainName) {
   const regex = new RegExp("^\\{" + domainName + "\\.(primitive|semantic)\\.[a-zA-Z0-9_.]+\\}$");
   assert(regex.test(value), label + " must be a valid " + domainName + " token reference.");
+}
+
+function validateColorTokenValue(value, label) {
+  if (isHexColor(value)) {
+    validateHexColor(value, label);
+    return;
+  }
+
+  validateTokenRef(value, label, "color");
+}
+
+function validateComponentShape(actual, expected, label) {
+  if (Array.isArray(expected)) {
+    assert(isPlainObject(actual), label + " must be an object.");
+    ensureExactKeys(actual, expected, label);
+
+    expected.forEach(function (key) {
+      validateColorTokenValue(actual[key], label + "." + key);
+    });
+
+    return;
+  }
+
+  assert(isPlainObject(actual), label + " must be an object.");
+  ensureExactKeys(actual, Object.keys(expected), label);
+
+  Object.entries(expected).forEach(function (entry) {
+    validateComponentShape(actual[entry[0]], entry[1], label + "." + entry[0]);
+  });
 }
 
 function validateColorTokens(tokens) {
@@ -318,7 +414,12 @@ function validateColorTokens(tokens) {
     });
   });
 
-  ensureExactKeys(tokens.color.semantic, ["bg", "text", "border", "feedback"], "color.semantic");
+  ensureExactKeys(tokens.color.semantic, ["family", "bg", "text", "border", "feedback", "component"], "color.semantic");
+  ensureExactKeys(
+    tokens.color.semantic.family,
+    Object.keys(EXPECTED_COLOR_SEMANTIC_KEYS.family),
+    "color.semantic.family",
+  );
   ensureExactKeys(tokens.color.semantic.bg, EXPECTED_COLOR_SEMANTIC_KEYS.bg, "color.semantic.bg");
   ensureExactKeys(tokens.color.semantic.text, EXPECTED_COLOR_SEMANTIC_KEYS.text, "color.semantic.text");
   ensureExactKeys(tokens.color.semantic.border, EXPECTED_COLOR_SEMANTIC_KEYS.border, "color.semantic.border");
@@ -327,6 +428,22 @@ function validateColorTokens(tokens) {
     Object.keys(EXPECTED_COLOR_SEMANTIC_KEYS.feedback),
     "color.semantic.feedback",
   );
+
+  Object.entries(EXPECTED_COLOR_SEMANTIC_KEYS.family).forEach(function (entry) {
+    const familyName = entry[0];
+    const expectedKeys = entry[1];
+    const familyTokens = tokens.color.semantic.family[familyName];
+
+    assert(isPlainObject(familyTokens), "color.semantic.family." + familyName + " must be an object.");
+    ensureExactKeys(familyTokens, expectedKeys, "color.semantic.family." + familyName);
+
+    Object.entries(familyTokens).forEach(function (familyEntry) {
+      validateColorTokenValue(
+        familyEntry[1],
+        "color.semantic.family." + familyName + "." + familyEntry[0],
+      );
+    });
+  });
 
   Object.entries(tokens.color.semantic.bg).forEach(function (entry) {
     validateTokenRef(entry[1], "color.semantic.bg." + entry[0], "color");
@@ -356,6 +473,12 @@ function validateColorTokens(tokens) {
       );
     });
   });
+
+  validateComponentShape(
+    tokens.color.semantic.component,
+    EXPECTED_COLOR_SEMANTIC_KEYS.component,
+    "color.semantic.component",
+  );
 }
 
 function parseTokenRef(ref) {
@@ -422,12 +545,13 @@ function hexToRgba(hex) {
   const red = parseInt(normalized.slice(0, 2), 16) / 255;
   const green = parseInt(normalized.slice(2, 4), 16) / 255;
   const blue = parseInt(normalized.slice(4, 6), 16) / 255;
+  const alpha = normalized.length === 8 ? parseInt(normalized.slice(6, 8), 16) / 255 : 1;
 
   return {
     r: red,
     g: green,
     b: blue,
-    a: 1,
+    a: alpha,
   };
 }
 
@@ -618,6 +742,7 @@ function toColorPrimitiveDefinitions(tokens) {
         collectionName: COLLECTIONS.PRIMITIVES,
         name: "color/" + paletteName + "/" + stepKey,
         resolvedType: "COLOR",
+        scopes: COLOR_SCOPES,
         value: {
           kind: "RAW",
           value: hexToRgba(value),
@@ -639,11 +764,26 @@ function collectColorSemanticDefinitions(node, pathParts, definitions) {
       return;
     }
 
+    if (isHexColor(value)) {
+      definitions.push({
+        collectionName: COLLECTIONS.SEMANTIC,
+        name: "color/" + pathParts.concat([key]).join("/"),
+        resolvedType: "COLOR",
+        scopes: COLOR_SCOPES,
+        value: {
+          kind: "RAW",
+          value: hexToRgba(value),
+        },
+      });
+      return;
+    }
+
     const target = tokenRefToVariableTarget(value);
     definitions.push({
       collectionName: COLLECTIONS.SEMANTIC,
       name: "color/" + pathParts.concat([key]).join("/"),
       resolvedType: "COLOR",
+      scopes: COLOR_SCOPES,
       value: {
         kind: "ALIAS",
         targetCollectionName: target.collectionName,
