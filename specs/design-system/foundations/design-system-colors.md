@@ -72,9 +72,9 @@ transparent: #00000000
 900: #171617
 800: #262627
 700: #3F3E42
-600: #514F54
-500: #807D85
-400: #918E96
+600: #67656B
+500: #8E8B94
+400: #A8A4AD
 300: #BEBCC0
 200: #D9D8DB
 100: #ECEBED
@@ -124,7 +124,7 @@ Primitive tokens:
 
 Global semantic tokens:
 - reusable semantic aliases shared across the design system
-- split into `family` and `role`
+- split into `family` and semantic roles such as `bg`, `text`, `border`, `icon`, and `feedback`
 
 Component semantic tokens:
 - tokens specialized for reusable components
@@ -235,6 +235,19 @@ color.semantic.border.brand
 color.semantic.border.focus
 color.semantic.border.inverse
 
+## Icon
+
+color.semantic.icon.brand
+color.semantic.icon.neutral
+color.semantic.icon.inverse
+color.semantic.icon.purple
+color.semantic.icon.indigo
+color.semantic.icon.yellow
+color.semantic.icon.pink
+color.semantic.icon.green
+color.semantic.icon.sky
+color.semantic.icon.red
+
 ## Feedback
 
 color.semantic.feedback.success.bg
@@ -295,21 +308,51 @@ color.semantic.component.projectSummaryCard.bg
 color.semantic.component.projectSummaryCard.title
 color.semantic.component.projectSummaryCard.label
 
-color.semantic.component.button.primary.default.bg
-color.semantic.component.button.primary.default.text
-color.semantic.component.button.primary.default.icon
-color.semantic.component.button.primary.hover.bg
-color.semantic.component.button.primary.hover.text
-color.semantic.component.button.primary.hover.icon
+color.semantic.component.button.filled.brand.default.bg
+color.semantic.component.button.filled.brand.default.text
+color.semantic.component.button.filled.brand.default.icon
+color.semantic.component.button.filled.brand.hover.bg
+color.semantic.component.button.filled.brand.hover.text
+color.semantic.component.button.filled.brand.hover.icon
+color.semantic.component.button.filled.brand.disabled.bg
+color.semantic.component.button.filled.brand.disabled.text
+color.semantic.component.button.filled.brand.disabled.icon
 
-color.semantic.component.button.primaryOutline.default.bg
-color.semantic.component.button.primaryOutline.default.text
-color.semantic.component.button.primaryOutline.default.icon
-color.semantic.component.button.primaryOutline.default.border
-color.semantic.component.button.primaryOutline.hover.bg
-color.semantic.component.button.primaryOutline.hover.text
-color.semantic.component.button.primaryOutline.hover.icon
-color.semantic.component.button.primaryOutline.hover.border
+color.semantic.component.button.filled.neutral.default.bg
+color.semantic.component.button.filled.neutral.default.text
+color.semantic.component.button.filled.neutral.default.icon
+color.semantic.component.button.filled.neutral.hover.bg
+color.semantic.component.button.filled.neutral.hover.text
+color.semantic.component.button.filled.neutral.hover.icon
+color.semantic.component.button.filled.neutral.disabled.bg
+color.semantic.component.button.filled.neutral.disabled.text
+color.semantic.component.button.filled.neutral.disabled.icon
+
+color.semantic.component.button.outline.brand.default.bg
+color.semantic.component.button.outline.brand.default.text
+color.semantic.component.button.outline.brand.default.icon
+color.semantic.component.button.outline.brand.default.border
+color.semantic.component.button.outline.brand.hover.bg
+color.semantic.component.button.outline.brand.hover.text
+color.semantic.component.button.outline.brand.hover.icon
+color.semantic.component.button.outline.brand.hover.border
+color.semantic.component.button.outline.brand.disabled.bg
+color.semantic.component.button.outline.brand.disabled.text
+color.semantic.component.button.outline.brand.disabled.icon
+color.semantic.component.button.outline.brand.disabled.border
+
+color.semantic.component.button.outline.neutral.default.bg
+color.semantic.component.button.outline.neutral.default.text
+color.semantic.component.button.outline.neutral.default.icon
+color.semantic.component.button.outline.neutral.default.border
+color.semantic.component.button.outline.neutral.hover.bg
+color.semantic.component.button.outline.neutral.hover.text
+color.semantic.component.button.outline.neutral.hover.icon
+color.semantic.component.button.outline.neutral.hover.border
+color.semantic.component.button.outline.neutral.disabled.bg
+color.semantic.component.button.outline.neutral.disabled.text
+color.semantic.component.button.outline.neutral.disabled.icon
+color.semantic.component.button.outline.neutral.disabled.border
 
 color.semantic.component.badge.purple.bg
 color.semantic.component.badge.purple.text
@@ -385,9 +428,9 @@ Example:
         "900": "#171617",
         "800": "#262627",
         "700": "#3F3E42",
-        "600": "#514F54",
-        "500": "#807D85",
-        "400": "#918E96",
+        "600": "#67656B",
+        "500": "#8E8B94",
+        "400": "#A8A4AD",
         "300": "#BEBCC0",
         "200": "#D9D8DB",
         "100": "#ECEBED",
@@ -517,6 +560,18 @@ Example:
         "focus": "{color.semantic.family.brand.pure}",
         "inverse": "{color.semantic.family.neutral.strong}"
       },
+      "icon": {
+        "brand": "{color.semantic.family.brand.strong}",
+        "neutral": "{color.semantic.family.neutral.body}",
+        "inverse": "{color.semantic.family.neutral.pure}",
+        "purple": "{color.semantic.family.brand.pure}",
+        "indigo": "{color.semantic.family.indigo.strong}",
+        "yellow": "{color.semantic.family.yellow.strong}",
+        "pink": "{color.semantic.family.pink.strong}",
+        "green": "{color.semantic.family.green.strong}",
+        "sky": "{color.semantic.family.sky.strong}",
+        "red": "{color.semantic.family.red.strong}"
+      },
       "feedback": {
         "success": {
           "bg": "{color.semantic.family.success.light}",
@@ -547,17 +602,17 @@ Example:
         "menuItem": {
           "default": {
             "bg": "{color.semantic.bg.surface}",
-            "icon": "{color.semantic.family.brand.strong}",
+            "icon": "{color.semantic.icon.brand}",
             "text": "{color.semantic.text.body}"
           },
           "hover": {
-            "bg": "{color.semantic.family.neutral.subtle}",
-            "icon": "{color.semantic.family.brand.strong}",
+            "bg": "{color.semantic.family.brand.subtle}",
+            "icon": "{color.semantic.icon.brand}",
             "text": "{color.semantic.text.body}"
           },
           "active": {
             "bg": "{color.semantic.family.brand.pure}",
-            "icon": "{color.semantic.family.neutral.pure}",
+            "icon": "{color.semantic.icon.inverse}",
             "text": "{color.semantic.family.neutral.pure}"
           }
         },
@@ -567,30 +622,82 @@ Example:
           "label": "{color.semantic.text.muted}"
         },
         "button": {
-          "primary": {
-            "default": {
-              "bg": "{color.semantic.bg.brand}",
-              "text": "{color.semantic.family.neutral.pure}",
-              "icon": "{color.semantic.family.neutral.pure}"
+          "filled": {
+            "brand": {
+              "default": {
+                "bg": "{color.semantic.bg.brand}",
+                "text": "{color.semantic.family.neutral.pure}",
+                "icon": "{color.semantic.icon.inverse}"
+              },
+              "hover": {
+                "bg": "{color.semantic.family.brand.strong}",
+                "text": "{color.semantic.family.neutral.pure}",
+                "icon": "{color.semantic.icon.inverse}"
+              },
+              "disabled": {
+                "bg": "{color.semantic.family.brand.soft}",
+                "text": "{color.semantic.family.neutral.pure}",
+                "icon": "{color.semantic.icon.inverse}"
+              }
             },
-            "hover": {
-              "bg": "{color.semantic.family.brand.strong}",
-              "text": "{color.semantic.family.neutral.pure}",
-              "icon": "{color.semantic.family.neutral.pure}"
+            "neutral": {
+              "default": {
+                "bg": "{color.semantic.family.neutral.strong}",
+                "text": "{color.semantic.family.neutral.pure}",
+                "icon": "{color.semantic.icon.inverse}"
+              },
+              "hover": {
+                "bg": "{color.semantic.family.neutral.inverse}",
+                "text": "{color.semantic.family.neutral.pure}",
+                "icon": "{color.semantic.icon.inverse}"
+              },
+              "disabled": {
+                "bg": "{color.semantic.family.neutral.muted}",
+                "text": "{color.semantic.family.neutral.pure}",
+                "icon": "{color.semantic.icon.inverse}"
+              }
             }
           },
-          "primaryOutline": {
-            "default": {
-              "bg": "{color.semantic.family.common.transparent}",
-              "text": "{color.semantic.family.brand.pure}",
-              "icon": "{color.semantic.family.brand.pure}",
-              "border": "{color.semantic.border.brand}"
+          "outline": {
+            "brand": {
+              "default": {
+                "bg": "{color.semantic.family.common.transparent}",
+                "text": "{color.semantic.family.brand.pure}",
+                "icon": "{color.semantic.icon.purple}",
+                "border": "{color.semantic.border.brand}"
+              },
+              "hover": {
+                "bg": "{color.semantic.family.brand.subtle}",
+                "text": "{color.semantic.family.brand.strong}",
+                "icon": "{color.semantic.icon.brand}",
+                "border": "{color.semantic.family.brand.strong}"
+              },
+              "disabled": {
+                "bg": "{color.semantic.family.common.transparent}",
+                "text": "{color.semantic.family.brand.soft}",
+                "icon": "{color.semantic.family.brand.soft}",
+                "border": "{color.semantic.family.brand.soft}"
+              }
             },
-            "hover": {
-              "bg": "{color.semantic.family.brand.subtle}",
-              "text": "{color.semantic.family.brand.strong}",
-              "icon": "{color.semantic.family.brand.strong}",
-              "border": "{color.semantic.family.brand.strong}"
+            "neutral": {
+              "default": {
+                "bg": "{color.semantic.family.common.transparent}",
+                "text": "{color.semantic.family.neutral.body}",
+                "icon": "{color.semantic.icon.neutral}",
+                "border": "{color.semantic.border.default}"
+              },
+              "hover": {
+                "bg": "{color.semantic.family.neutral.subtle}",
+                "text": "{color.semantic.family.neutral.strong}",
+                "icon": "{color.semantic.icon.neutral}",
+                "border": "{color.semantic.border.strong}"
+              },
+              "disabled": {
+                "bg": "{color.semantic.family.common.transparent}",
+                "text": "{color.semantic.family.neutral.muted}",
+                "icon": "{color.semantic.family.neutral.muted}",
+                "border": "{color.semantic.family.neutral.muted}"
+              }
             }
           }
         },
@@ -627,31 +734,31 @@ Example:
         "iconTile": {
           "purple": {
             "bg": "{color.semantic.family.brand.light}",
-            "icon": "{color.semantic.family.brand.pure}"
+            "icon": "{color.semantic.icon.purple}"
           },
           "indigo": {
             "bg": "{color.semantic.family.indigo.light}",
-            "icon": "{color.semantic.family.indigo.strong}"
+            "icon": "{color.semantic.icon.indigo}"
           },
           "yellow": {
             "bg": "{color.semantic.family.yellow.light}",
-            "icon": "{color.semantic.family.yellow.strong}"
+            "icon": "{color.semantic.icon.yellow}"
           },
           "pink": {
             "bg": "{color.semantic.family.pink.light}",
-            "icon": "{color.semantic.family.pink.strong}"
+            "icon": "{color.semantic.icon.pink}"
           },
           "green": {
             "bg": "{color.semantic.family.green.light}",
-            "icon": "{color.semantic.family.green.strong}"
+            "icon": "{color.semantic.icon.green}"
           },
           "sky": {
             "bg": "{color.semantic.family.sky.light}",
-            "icon": "{color.semantic.family.sky.strong}"
+            "icon": "{color.semantic.icon.sky}"
           },
           "red": {
             "bg": "{color.semantic.family.red.light}",
-            "icon": "{color.semantic.family.red.strong}"
+            "icon": "{color.semantic.icon.red}"
           }
         },
         "dataRow": {
@@ -672,11 +779,11 @@ Example:
           "actionIcon": {
             "default": {
               "bg": "{color.semantic.family.brand.light}",
-              "icon": "{color.semantic.family.brand.strong}"
+              "icon": "{color.semantic.icon.brand}"
             },
             "hover": {
               "bg": "{color.semantic.family.brand.soft}",
-              "icon": "{color.semantic.family.brand.strong}"
+              "icon": "{color.semantic.icon.brand}"
             }
           }
         }
@@ -705,11 +812,80 @@ Semantic variable naming:
 - color/bg/canvas
 - color/text/heading
 - color/border/focus
+- color/icon/brand
 - color/feedback/success/bg
 - color/component/menuItem/active/bg
-- color/component/button/primary/default/bg
+- color/component/button/filled/brand/default/bg
 - color/component/badge/purple/bg
 - color/component/dataRow/actionIcon/hover/icon
+
+---
+
+# Figma Component Contract
+
+## Icons
+
+- every icon is a 24x24 component
+- every icon component must keep the same internal structure and vector naming
+- icon glyph is swapped through `instance swap`
+- icon color is controlled by variables, not by component swapping
+
+Recommended examples:
+- Icon / home
+- Icon / settings
+- Icon / user
+- Icon / plus
+
+If the system needs outline and filled glyphs, they may be implemented as variants inside the same icon component set:
+- `style = outline`
+- `style = filled`
+
+In the current library, this is the canonical implementation.
+
+## Buttons
+
+Buttons must use this structure:
+
+```text
+Button
+ ├ Icon
+ └ Label
+```
+
+Rules:
+- `Icon` is an icon component instance
+- the exposed `icon` property must be an `instance swap`
+- the button does not expose a manual icon color override
+- icon color follows the button `appearance + tone + state`
+- button color variables are the canonical source for filled and outline appearances in `brand` and `neutral`
+- the current library exposes these Figma properties:
+  - `size`
+  - `state`
+  - `style`
+  - `tone`
+  - `show icon`
+
+This keeps icon glyph and icon color independent:
+- `instance swap` chooses the glyph
+- variables choose the color
+
+## Practical Figma Implementation
+
+The repository token JSON remains the semantic source of truth.
+
+Inside the Figma library, components may be implemented with explicit variants or duplicated compositions when nested alias behavior is not reliable enough.
+
+This is an acceptable implementation detail for:
+- Button
+- Badge
+- Icon Tile
+
+The current library adopts this pragmatic approach to preserve predictable behavior in Figma while keeping the token model canonical.
+
+Current component properties in the library:
+- `Button`: `size`, `state`, `style`, `tone`, `show icon`
+- `Badge`: `type`
+- `Icon Tile`: `type`
 
 ---
 

@@ -120,6 +120,7 @@ const EXPECTED_COLOR_SEMANTIC_KEYS = {
   bg: ["canvas", "surface", "subtle", "brand", "inverse"],
   text: ["heading", "body", "muted", "placeholder", "disabled"],
   border: ["default", "subtle", "strong", "brand", "focus", "inverse"],
+  icon: ["brand", "neutral", "inverse", "purple", "indigo", "yellow", "pink", "green", "sky", "red"],
   feedback: {
     success: ["bg", "surface", "text", "border"],
     warning: ["bg", "surface", "text", "border"],
@@ -134,13 +135,25 @@ const EXPECTED_COLOR_SEMANTIC_KEYS = {
     },
     projectSummaryCard: ["bg", "title", "label"],
     button: {
-      primary: {
-        default: ["bg", "text", "icon"],
-        hover: ["bg", "text", "icon"],
+      filled: {
+        brand: {
+          default: ["bg", "text", "icon"],
+          hover: ["bg", "text", "icon"],
+        },
+        neutral: {
+          default: ["bg", "text", "icon"],
+          hover: ["bg", "text", "icon"],
+        },
       },
-      primaryOutline: {
-        default: ["bg", "text", "icon", "border"],
-        hover: ["bg", "text", "icon", "border"],
+      outline: {
+        brand: {
+          default: ["bg", "text", "icon", "border"],
+          hover: ["bg", "text", "icon", "border"],
+        },
+        neutral: {
+          default: ["bg", "text", "icon", "border"],
+          hover: ["bg", "text", "icon", "border"],
+        },
       },
     },
     badge: {
@@ -414,7 +427,11 @@ function validateColorTokens(tokens) {
     });
   });
 
-  ensureExactKeys(tokens.color.semantic, ["family", "bg", "text", "border", "feedback", "component"], "color.semantic");
+  ensureExactKeys(
+    tokens.color.semantic,
+    ["family", "bg", "text", "border", "icon", "feedback", "component"],
+    "color.semantic",
+  );
   ensureExactKeys(
     tokens.color.semantic.family,
     Object.keys(EXPECTED_COLOR_SEMANTIC_KEYS.family),
@@ -423,6 +440,7 @@ function validateColorTokens(tokens) {
   ensureExactKeys(tokens.color.semantic.bg, EXPECTED_COLOR_SEMANTIC_KEYS.bg, "color.semantic.bg");
   ensureExactKeys(tokens.color.semantic.text, EXPECTED_COLOR_SEMANTIC_KEYS.text, "color.semantic.text");
   ensureExactKeys(tokens.color.semantic.border, EXPECTED_COLOR_SEMANTIC_KEYS.border, "color.semantic.border");
+  ensureExactKeys(tokens.color.semantic.icon, EXPECTED_COLOR_SEMANTIC_KEYS.icon, "color.semantic.icon");
   ensureExactKeys(
     tokens.color.semantic.feedback,
     Object.keys(EXPECTED_COLOR_SEMANTIC_KEYS.feedback),
@@ -455,6 +473,10 @@ function validateColorTokens(tokens) {
 
   Object.entries(tokens.color.semantic.border).forEach(function (entry) {
     validateTokenRef(entry[1], "color.semantic.border." + entry[0], "color");
+  });
+
+  Object.entries(tokens.color.semantic.icon).forEach(function (entry) {
+    validateTokenRef(entry[1], "color.semantic.icon." + entry[0], "color");
   });
 
   Object.entries(EXPECTED_COLOR_SEMANTIC_KEYS.feedback).forEach(function (entry) {
