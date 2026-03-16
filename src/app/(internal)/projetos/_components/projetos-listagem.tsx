@@ -12,6 +12,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { PageHeader } from '@/components/page-header'
+import { DataRowProjects } from './data-row-projects'
 import { STATUS_LABELS } from '@/lib/constants'
 
 type ProjetoListItem = {
@@ -59,12 +61,14 @@ export function ProjetosListagem({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold">Projetos</h1>
-        <Link href="/projetos/novo">
-          <Button>Novo projeto</Button>
-        </Link>
-      </div>
+      <PageHeader
+        title="Projetos"
+        actions={
+          <Link href="/projetos/novo">
+            <Button variant="filled-brand">Novo projeto</Button>
+          </Link>
+        }
+      />
 
       {/* Filtros */}
       <div className="flex flex-wrap items-center gap-3">
@@ -111,34 +115,24 @@ export function ProjetosListagem({
 
       {/* Lista */}
       {projetos.length === 0 ? (
-        <p className="text-muted-foreground py-8 text-center">
+        <p className="py-8 text-center text-ds-muted">
           Nenhum projeto encontrado.
         </p>
       ) : (
-        <div className="divide-y rounded-lg border">
+        <div className="overflow-hidden rounded-lg border border-[var(--ds-color-component-data-row-default-border)]">
           {projetos.map((projeto) => (
-            <div
+            <DataRowProjects
               key={projeto.id}
-              className="flex items-center justify-between gap-4 px-4 py-3"
-            >
-              <div className="min-w-0 flex-1">
-                <Link
-                  href={`/projetos/${projeto.id}`}
-                  className="font-medium text-primary hover:underline"
-                >
-                  {projeto.nome}
-                </Link>
-                <div className="flex gap-3 text-sm text-muted-foreground">
-                  <span>{projeto.cliente.nome}</span>
-                  <span>
-                    {new Date(projeto.data_inicio).toLocaleDateString('pt-BR')}
-                  </span>
-                </div>
-              </div>
-              <Badge variant="secondary">
-                {STATUS_LABELS[projeto.status] ?? projeto.status}
-              </Badge>
-            </div>
+              id={projeto.id}
+              nome={projeto.nome}
+              clienteNome={projeto.cliente.nome}
+              dataInicio={projeto.data_inicio}
+              badge={
+                <Badge variant="purple">
+                  {STATUS_LABELS[projeto.status] ?? projeto.status}
+                </Badge>
+              }
+            />
           ))}
         </div>
       )}

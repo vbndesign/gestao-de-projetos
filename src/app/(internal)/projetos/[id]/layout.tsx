@@ -1,9 +1,16 @@
 import { notFound } from 'next/navigation'
-import Link from 'next/link'
 import { getProjetoById } from '@/queries/projeto.queries'
 import { Badge } from '@/components/ui/badge'
+import { PageHeader } from '@/components/page-header'
+import { PageTabs } from '@/components/page-tabs'
 import { STATUS_LABELS } from '@/lib/constants'
-import { ProjetoTabs } from './_components/projeto-tabs'
+
+const getProjetoTabs = (id: string) => [
+  { label: 'Visão Geral', href: `/projetos/${id}` },
+  { label: 'Fases', href: `/projetos/${id}/fases` },
+  { label: 'Timeline', href: `/projetos/${id}/timeline` },
+  { label: 'Horas', href: `/projetos/${id}/horas` },
+]
 
 export default async function ProjetoLayout({
   params,
@@ -19,27 +26,21 @@ export default async function ProjetoLayout({
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-1 text-sm text-muted-foreground">
-        <Link href="/projetos" className="hover:text-foreground">
-          Projetos
-        </Link>
-        <span>/</span>
-        <span className="text-foreground">{projeto.nome}</span>
-      </nav>
+      <PageHeader
+        title={projeto.nome}
+        breadcrumbs={[
+          { label: 'Projetos', href: '/projetos' },
+          { label: projeto.nome },
+        ]}
+        badge={
+          <Badge variant="purple">
+            {STATUS_LABELS[projeto.status] ?? projeto.status}
+          </Badge>
+        }
+      />
 
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <h1 className="text-2xl font-semibold">{projeto.nome}</h1>
-        <Badge variant="secondary">
-          {STATUS_LABELS[projeto.status] ?? projeto.status}
-        </Badge>
-      </div>
+      <PageTabs tabs={getProjetoTabs(id)} />
 
-      {/* Tabs */}
-      <ProjetoTabs id={id} />
-
-      {/* Content */}
       {children}
     </div>
   )
