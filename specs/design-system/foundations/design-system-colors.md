@@ -287,6 +287,15 @@ Component tokens should reference:
 
 For `dataRow`, background, border, and title color remain component-specific.
 
+`Data Row Projects` is currently a consumer of the same `dataRow` token contract.
+
+It should remain mapped to `color.component.dataRow.*` while the visual contract stays the same and only the displayed content changes.
+
+Create a dedicated `dataRowProjects` token namespace only if one of these divergences appears:
+- a distinct header color treatment
+- additional row states such as `selected`, `archived`, or `warning`
+- different title, border, background, or action color mappings
+
 Text inside the row should use global tokens:
 - default title -> `color/text/heading`
 - hover title -> `color/family/brand/strong`
@@ -931,6 +940,8 @@ This keeps icon glyph and icon color independent:
 ## Practical Figma Implementation
 
 The repository token JSON remains the semantic source of truth.
+
+Layer and internal naming conventions for the Figma library are documented separately in `design-system-figma-naming.md`.
 
 Inside the Figma library, components may be implemented with explicit variants or duplicated compositions when nested alias behavior is not reliable enough.
 
