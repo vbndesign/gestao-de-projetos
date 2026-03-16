@@ -189,8 +189,9 @@
           "text": "{color.semantic.family.info.strong}",
           "border": "{color.semantic.family.info.pure}"
         }
-      },
-      "component": {
+      }
+    },
+    "component": {
         "menuItem": {
           "default": {
             "bg": "{color.semantic.bg.surface}",
@@ -276,13 +277,13 @@
                 "bg": "{color.semantic.family.common.transparent}",
                 "text": "{color.semantic.family.neutral.body}",
                 "icon": "{color.semantic.icon.neutral}",
-                "border": "{color.semantic.border.default}"
+                "border": "{color.semantic.border.strong}"
               },
               "hover": {
                 "bg": "{color.semantic.family.neutral.subtle}",
                 "text": "{color.semantic.family.neutral.strong}",
-                "icon": "{color.semantic.icon.neutral}",
-                "border": "{color.semantic.border.strong}"
+                "icon": "{color.semantic.family.neutral.strong}",
+                "border": "{color.semantic.family.neutral.strong}"
               },
               "disabled": {
                 "bg": "{color.semantic.family.common.transparent}",
@@ -353,33 +354,44 @@
             "icon": "{color.semantic.icon.red}"
           }
         },
+        "buttonIcon": {
+          "filled": {
+            "default": {
+              "bg": "{color.semantic.family.brand.light}",
+              "icon": "{color.semantic.icon.neutral}"
+            },
+            "hover": {
+              "bg": "{color.semantic.family.brand.soft}",
+              "icon": "{color.semantic.icon.neutral}"
+            },
+            "disabled": {
+              "bg": "{color.semantic.family.brand.subtle}",
+              "icon": "{color.semantic.family.neutral.muted}"
+            }
+          },
+          "transparent": {
+            "default": {
+              "bg": "{color.semantic.family.common.transparent}",
+              "icon": "{color.semantic.icon.neutral}"
+            }
+          }
+        },
         "dataRow": {
           "header": {
             "bg": "{color.semantic.family.brand.subtle}",
             "text": "{color.semantic.text.body}"
           },
           "default": {
+            "title": "{color.semantic.text.heading}",
             "bg": "{color.semantic.bg.surface}",
-            "border": "{color.semantic.border.default}",
-            "title": "{color.semantic.family.brand.strong}"
+            "border": "{color.semantic.border.default}"
           },
           "hover": {
+            "title": "{color.semantic.family.brand.strong}",
             "bg": "{color.semantic.family.brand.subtle}",
-            "border": "{color.semantic.family.brand.strong}",
-            "title": "{color.semantic.family.brand.strong}"
-          },
-          "actionIcon": {
-            "default": {
-              "bg": "{color.semantic.family.brand.light}",
-              "icon": "{color.semantic.icon.brand}"
-            },
-            "hover": {
-              "bg": "{color.semantic.family.brand.soft}",
-              "icon": "{color.semantic.icon.brand}"
-            }
+            "border": "{color.semantic.family.brand.strong}"
           }
         }
       }
     }
   }
-}

@@ -273,7 +273,7 @@
 
         if (message.type === "IMPORT_SUCCESS" && message.domain === "colors") {
           setStatus(
-            `Color import completed.\nPrimitives: ${message.summary.primitiveCount}\nSemantic: ${message.summary.semanticCount}\nRemoved obsolete variables: ${message.summary.removedVariableCount}`,
+            `Color import completed.\nPrimitives: ${message.summary.primitiveCount}\nSemantic: ${message.summary.semanticCount}\nComponents: ${message.summary.componentCount}\nRemoved obsolete variables: ${message.summary.removedVariableCount}`,
             "ok",
           );
           return;

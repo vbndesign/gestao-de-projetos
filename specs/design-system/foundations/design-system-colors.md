@@ -126,9 +126,13 @@ Global semantic tokens:
 - reusable semantic aliases shared across the design system
 - split into `family` and semantic roles such as `bg`, `text`, `border`, `icon`, and `feedback`
 
-Component semantic tokens:
+Component tokens:
 - tokens specialized for reusable components
 - should prefer global semantic tokens over direct primitive references
+
+This logical architecture does not need to match the physical Figma collections one-to-one.
+
+In Figma, component tokens may live in a dedicated collection even when they are represented in the JSON as `color.component.*`.
 
 ---
 
@@ -281,6 +285,14 @@ Component tokens should reference:
 2. family tokens second
 3. primitive tokens only as an exception
 
+For `dataRow`, background, border, and title color remain component-specific.
+
+Text inside the row should use global tokens:
+- default title -> `color/text/heading`
+- hover title -> `color/family/brand/strong`
+- description and metadata -> `color/text/muted`
+- nested `Icon Tile` and `Badge` keep their own component tokens
+
 ## Component State Guidance
 
 Component tokens may be separated by state when the visual color changes between states.
@@ -294,108 +306,113 @@ To prevent uncontrolled growth:
 
 ## Component Tokens
 
-color.semantic.component.menuItem.default.bg
-color.semantic.component.menuItem.default.icon
-color.semantic.component.menuItem.default.text
-color.semantic.component.menuItem.hover.bg
-color.semantic.component.menuItem.hover.icon
-color.semantic.component.menuItem.hover.text
-color.semantic.component.menuItem.active.bg
-color.semantic.component.menuItem.active.icon
-color.semantic.component.menuItem.active.text
+color.component.menuItem.default.bg
+color.component.menuItem.default.icon
+color.component.menuItem.default.text
+color.component.menuItem.hover.bg
+color.component.menuItem.hover.icon
+color.component.menuItem.hover.text
+color.component.menuItem.active.bg
+color.component.menuItem.active.icon
+color.component.menuItem.active.text
 
-color.semantic.component.projectSummaryCard.bg
-color.semantic.component.projectSummaryCard.title
-color.semantic.component.projectSummaryCard.label
+color.component.projectSummaryCard.bg
+color.component.projectSummaryCard.title
+color.component.projectSummaryCard.label
 
-color.semantic.component.button.filled.brand.default.bg
-color.semantic.component.button.filled.brand.default.text
-color.semantic.component.button.filled.brand.default.icon
-color.semantic.component.button.filled.brand.hover.bg
-color.semantic.component.button.filled.brand.hover.text
-color.semantic.component.button.filled.brand.hover.icon
-color.semantic.component.button.filled.brand.disabled.bg
-color.semantic.component.button.filled.brand.disabled.text
-color.semantic.component.button.filled.brand.disabled.icon
+color.component.button.filled.brand.default.bg
+color.component.button.filled.brand.default.text
+color.component.button.filled.brand.default.icon
+color.component.button.filled.brand.hover.bg
+color.component.button.filled.brand.hover.text
+color.component.button.filled.brand.hover.icon
+color.component.button.filled.brand.disabled.bg
+color.component.button.filled.brand.disabled.text
+color.component.button.filled.brand.disabled.icon
 
-color.semantic.component.button.filled.neutral.default.bg
-color.semantic.component.button.filled.neutral.default.text
-color.semantic.component.button.filled.neutral.default.icon
-color.semantic.component.button.filled.neutral.hover.bg
-color.semantic.component.button.filled.neutral.hover.text
-color.semantic.component.button.filled.neutral.hover.icon
-color.semantic.component.button.filled.neutral.disabled.bg
-color.semantic.component.button.filled.neutral.disabled.text
-color.semantic.component.button.filled.neutral.disabled.icon
+color.component.button.filled.neutral.default.bg
+color.component.button.filled.neutral.default.text
+color.component.button.filled.neutral.default.icon
+color.component.button.filled.neutral.hover.bg
+color.component.button.filled.neutral.hover.text
+color.component.button.filled.neutral.hover.icon
+color.component.button.filled.neutral.disabled.bg
+color.component.button.filled.neutral.disabled.text
+color.component.button.filled.neutral.disabled.icon
 
-color.semantic.component.button.outline.brand.default.bg
-color.semantic.component.button.outline.brand.default.text
-color.semantic.component.button.outline.brand.default.icon
-color.semantic.component.button.outline.brand.default.border
-color.semantic.component.button.outline.brand.hover.bg
-color.semantic.component.button.outline.brand.hover.text
-color.semantic.component.button.outline.brand.hover.icon
-color.semantic.component.button.outline.brand.hover.border
-color.semantic.component.button.outline.brand.disabled.bg
-color.semantic.component.button.outline.brand.disabled.text
-color.semantic.component.button.outline.brand.disabled.icon
-color.semantic.component.button.outline.brand.disabled.border
+color.component.button.outline.brand.default.bg
+color.component.button.outline.brand.default.text
+color.component.button.outline.brand.default.icon
+color.component.button.outline.brand.default.border
+color.component.button.outline.brand.hover.bg
+color.component.button.outline.brand.hover.text
+color.component.button.outline.brand.hover.icon
+color.component.button.outline.brand.hover.border
+color.component.button.outline.brand.disabled.bg
+color.component.button.outline.brand.disabled.text
+color.component.button.outline.brand.disabled.icon
+color.component.button.outline.brand.disabled.border
 
-color.semantic.component.button.outline.neutral.default.bg
-color.semantic.component.button.outline.neutral.default.text
-color.semantic.component.button.outline.neutral.default.icon
-color.semantic.component.button.outline.neutral.default.border
-color.semantic.component.button.outline.neutral.hover.bg
-color.semantic.component.button.outline.neutral.hover.text
-color.semantic.component.button.outline.neutral.hover.icon
-color.semantic.component.button.outline.neutral.hover.border
-color.semantic.component.button.outline.neutral.disabled.bg
-color.semantic.component.button.outline.neutral.disabled.text
-color.semantic.component.button.outline.neutral.disabled.icon
-color.semantic.component.button.outline.neutral.disabled.border
+color.component.button.outline.neutral.default.bg
+color.component.button.outline.neutral.default.text
+color.component.button.outline.neutral.default.icon
+color.component.button.outline.neutral.default.border
+color.component.button.outline.neutral.hover.bg
+color.component.button.outline.neutral.hover.text
+color.component.button.outline.neutral.hover.icon
+color.component.button.outline.neutral.hover.border
+color.component.button.outline.neutral.disabled.bg
+color.component.button.outline.neutral.disabled.text
+color.component.button.outline.neutral.disabled.icon
+color.component.button.outline.neutral.disabled.border
 
-color.semantic.component.badge.purple.bg
-color.semantic.component.badge.purple.text
-color.semantic.component.badge.indigo.bg
-color.semantic.component.badge.indigo.text
-color.semantic.component.badge.yellow.bg
-color.semantic.component.badge.yellow.text
-color.semantic.component.badge.pink.bg
-color.semantic.component.badge.pink.text
-color.semantic.component.badge.green.bg
-color.semantic.component.badge.green.text
-color.semantic.component.badge.sky.bg
-color.semantic.component.badge.sky.text
-color.semantic.component.badge.red.bg
-color.semantic.component.badge.red.text
+color.component.badge.purple.bg
+color.component.badge.purple.text
+color.component.badge.indigo.bg
+color.component.badge.indigo.text
+color.component.badge.yellow.bg
+color.component.badge.yellow.text
+color.component.badge.pink.bg
+color.component.badge.pink.text
+color.component.badge.green.bg
+color.component.badge.green.text
+color.component.badge.sky.bg
+color.component.badge.sky.text
+color.component.badge.red.bg
+color.component.badge.red.text
 
-color.semantic.component.iconTile.purple.bg
-color.semantic.component.iconTile.purple.icon
-color.semantic.component.iconTile.indigo.bg
-color.semantic.component.iconTile.indigo.icon
-color.semantic.component.iconTile.yellow.bg
-color.semantic.component.iconTile.yellow.icon
-color.semantic.component.iconTile.pink.bg
-color.semantic.component.iconTile.pink.icon
-color.semantic.component.iconTile.green.bg
-color.semantic.component.iconTile.green.icon
-color.semantic.component.iconTile.sky.bg
-color.semantic.component.iconTile.sky.icon
-color.semantic.component.iconTile.red.bg
-color.semantic.component.iconTile.red.icon
+color.component.iconTile.purple.bg
+color.component.iconTile.purple.icon
+color.component.iconTile.indigo.bg
+color.component.iconTile.indigo.icon
+color.component.iconTile.yellow.bg
+color.component.iconTile.yellow.icon
+color.component.iconTile.pink.bg
+color.component.iconTile.pink.icon
+color.component.iconTile.green.bg
+color.component.iconTile.green.icon
+color.component.iconTile.sky.bg
+color.component.iconTile.sky.icon
+color.component.iconTile.red.bg
+color.component.iconTile.red.icon
 
-color.semantic.component.dataRow.header.bg
-color.semantic.component.dataRow.header.text
-color.semantic.component.dataRow.default.bg
-color.semantic.component.dataRow.default.border
-color.semantic.component.dataRow.default.title
-color.semantic.component.dataRow.hover.bg
-color.semantic.component.dataRow.hover.border
-color.semantic.component.dataRow.hover.title
-color.semantic.component.dataRow.actionIcon.default.bg
-color.semantic.component.dataRow.actionIcon.default.icon
-color.semantic.component.dataRow.actionIcon.hover.bg
-color.semantic.component.dataRow.actionIcon.hover.icon
+color.component.buttonIcon.filled.default.bg
+color.component.buttonIcon.filled.default.icon
+color.component.buttonIcon.filled.hover.bg
+color.component.buttonIcon.filled.hover.icon
+color.component.buttonIcon.filled.disabled.bg
+color.component.buttonIcon.filled.disabled.icon
+color.component.buttonIcon.transparent.default.bg
+color.component.buttonIcon.transparent.default.icon
+
+color.component.dataRow.header.bg
+color.component.dataRow.header.text
+color.component.dataRow.default.title
+color.component.dataRow.default.bg
+color.component.dataRow.default.border
+color.component.dataRow.hover.title
+color.component.dataRow.hover.bg
+color.component.dataRow.hover.border
 
 ---
 
@@ -597,8 +614,9 @@ Example:
           "text": "{color.semantic.family.info.strong}",
           "border": "{color.semantic.family.info.pure}"
         }
-      },
-      "component": {
+      }
+    },
+    "component": {
         "menuItem": {
           "default": {
             "bg": "{color.semantic.bg.surface}",
@@ -761,30 +779,42 @@ Example:
             "icon": "{color.semantic.icon.red}"
           }
         },
+        "buttonIcon": {
+          "filled": {
+            "default": {
+              "bg": "{color.semantic.family.brand.light}",
+              "icon": "{color.semantic.icon.neutral}"
+            },
+            "hover": {
+              "bg": "{color.semantic.family.brand.soft}",
+              "icon": "{color.semantic.icon.neutral}"
+            },
+            "disabled": {
+              "bg": "{color.semantic.family.brand.subtle}",
+              "icon": "{color.semantic.family.neutral.muted}"
+            }
+          },
+          "transparent": {
+            "default": {
+              "bg": "{color.semantic.family.common.transparent}",
+              "icon": "{color.semantic.icon.neutral}"
+            }
+          }
+        },
         "dataRow": {
           "header": {
             "bg": "{color.semantic.family.brand.subtle}",
             "text": "{color.semantic.text.body}"
           },
           "default": {
+            "title": "{color.semantic.text.heading}",
             "bg": "{color.semantic.bg.surface}",
-            "border": "{color.semantic.border.default}",
-            "title": "{color.semantic.family.brand.strong}"
+            "border": "{color.semantic.border.default}"
           },
           "hover": {
+            "title": "{color.semantic.family.brand.strong}",
             "bg": "{color.semantic.family.brand.subtle}",
-            "border": "{color.semantic.family.brand.strong}",
-            "title": "{color.semantic.family.brand.strong}"
-          },
-          "actionIcon": {
-            "default": {
-              "bg": "{color.semantic.family.brand.light}",
-              "icon": "{color.semantic.icon.brand}"
-            },
-            "hover": {
-              "bg": "{color.semantic.family.brand.soft}",
-              "icon": "{color.semantic.icon.brand}"
-            }
+            "border": "{color.semantic.family.brand.strong}"
           }
         }
       }
@@ -797,9 +827,10 @@ Example:
 
 # Figma Mapping
 
-Color tokens must be synced into two Figma Variable Collections:
+Color tokens must be synced into three Figma Variable Collections:
 - Primitives
 - Semantic
+- Components
 
 Primitive variable naming:
 - color/common/transparent
@@ -814,10 +845,22 @@ Semantic variable naming:
 - color/border/focus
 - color/icon/brand
 - color/feedback/success/bg
-- color/component/menuItem/active/bg
-- color/component/button/filled/brand/default/bg
-- color/component/badge/purple/bg
-- color/component/dataRow/actionIcon/hover/icon
+
+Components variable naming:
+- color/menuItem/active/bg
+- color/button/filled/brand/default/bg
+- color/buttonIcon/filled/default/bg
+- color/badge/purple/bg
+- color/dataRow/hover/border
+
+Mapping rule:
+- `color.primitive.*` -> `Primitives`
+- `color.semantic.family|bg|text|border|icon|feedback.*` -> `Semantic`
+- `color.component.*` -> `Components`
+
+The repository token JSON now separates `color.semantic` and `color.component` as sibling keys.
+
+The separation into `Components` is a Figma mapping concern, not a change to the semantic architecture of the token source.
 
 ---
 
@@ -841,6 +884,22 @@ If the system needs outline and filled glyphs, they may be implemented as varian
 - `style = filled`
 
 In the current library, this is the canonical implementation.
+
+## Button Icon
+
+`Button Icon` is a canonical action component for icon-only interactions.
+
+Its current semantic contract is:
+- `filled.default`
+- `filled.hover`
+- `filled.disabled`
+- `transparent.default`
+
+Current visual mapping:
+- filled default: `bg -> color/family/brand/100`, `icon -> color/icon/neutral`
+- filled hover: `bg -> color/family/brand/200`, `icon -> color/icon/neutral`
+- filled disabled: `bg -> color/family/brand/50`, `icon -> color/family/neutral/muted`
+- transparent default: `bg -> color/family/common/transparent`, `icon -> color/icon/neutral`
 
 ## Buttons
 
@@ -877,6 +936,7 @@ Inside the Figma library, components may be implemented with explicit variants o
 
 This is an acceptable implementation detail for:
 - Button
+- Button Icon
 - Badge
 - Icon Tile
 
@@ -884,6 +944,7 @@ The current library adopts this pragmatic approach to preserve predictable behav
 
 Current component properties in the library:
 - `Button`: `size`, `state`, `style`, `tone`, `show icon`
+- `Button Icon`: `state`, `appearance`
 - `Badge`: `type`
 - `Icon Tile`: `type`
 
@@ -938,3 +999,4 @@ The Codex agent must:
 2. Preserve exact hexadecimal values from the approved design source.
 3. Keep global semantic roles and component tokens dependent on semantic families whenever possible.
 4. Treat the repository token JSON as the source of truth for Figma and code adapters.
+

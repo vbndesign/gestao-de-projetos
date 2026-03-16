@@ -1,6 +1,7 @@
 const COLLECTIONS = {
   PRIMITIVES: "Primitives",
   SEMANTIC: "Semantic",
+  COMPONENTS: "Components",
 };
 
 const DEFAULT_MODE_NAME = "Default";
@@ -139,20 +140,24 @@ const EXPECTED_COLOR_SEMANTIC_KEYS = {
         brand: {
           default: ["bg", "text", "icon"],
           hover: ["bg", "text", "icon"],
+          disabled: ["bg", "text", "icon"],
         },
         neutral: {
           default: ["bg", "text", "icon"],
           hover: ["bg", "text", "icon"],
+          disabled: ["bg", "text", "icon"],
         },
       },
       outline: {
         brand: {
           default: ["bg", "text", "icon", "border"],
           hover: ["bg", "text", "icon", "border"],
+          disabled: ["bg", "text", "icon", "border"],
         },
         neutral: {
           default: ["bg", "text", "icon", "border"],
           hover: ["bg", "text", "icon", "border"],
+          disabled: ["bg", "text", "icon", "border"],
         },
       },
     },
@@ -174,14 +179,20 @@ const EXPECTED_COLOR_SEMANTIC_KEYS = {
       sky: ["bg", "icon"],
       red: ["bg", "icon"],
     },
-    dataRow: {
-      header: ["bg", "text"],
-      default: ["bg", "border", "title"],
-      hover: ["bg", "border", "title"],
-      actionIcon: {
+    buttonIcon: {
+      filled: {
         default: ["bg", "icon"],
         hover: ["bg", "icon"],
+        disabled: ["bg", "icon"],
       },
+      transparent: {
+        default: ["bg", "icon"],
+      },
+    },
+    dataRow: {
+      header: ["bg", "text"],
+      default: ["title", "bg", "border"],
+      hover: ["title", "bg", "border"],
     },
   },
 };
@@ -254,7 +265,9 @@ figma.ui.onmessage = async (message) => {
           summary.primitiveCount +
           " primitive variables, " +
           summary.semanticCount +
-          " semantic variables.",
+          " semantic variables, " +
+          summary.componentCount +
+          " component variables.",
       );
       return;
     }
@@ -411,7 +424,9 @@ function validateColorTokens(tokens) {
   assert(isPlainObject(tokens.color), "Missing top-level color object.");
   assert(isPlainObject(tokens.color.primitive), "Missing color.primitive.");
   assert(isPlainObject(tokens.color.semantic), "Missing color.semantic.");
+  assert(isPlainObject(tokens.color.component), "Missing color.component.");
 
+  ensureExactKeys(tokens.color, ["primitive", "semantic", "component"], "color");
   ensureExactKeys(tokens.color.primitive, Object.keys(EXPECTED_COLOR_PRIMITIVE_KEYS), "color.primitive");
 
   Object.entries(EXPECTED_COLOR_PRIMITIVE_KEYS).forEach(function (entry) {
@@ -429,7 +444,7 @@ function validateColorTokens(tokens) {
 
   ensureExactKeys(
     tokens.color.semantic,
-    ["family", "bg", "text", "border", "icon", "feedback", "component"],
+    ["family", "bg", "text", "border", "icon", "feedback"],
     "color.semantic",
   );
   ensureExactKeys(
@@ -497,9 +512,9 @@ function validateColorTokens(tokens) {
   });
 
   validateComponentShape(
-    tokens.color.semantic.component,
+    tokens.color.component,
     EXPECTED_COLOR_SEMANTIC_KEYS.component,
-    "color.semantic.component",
+    "color.component",
   );
 }
 
@@ -517,8 +532,18 @@ function tokenRefToVariableTarget(ref) {
   const parts = parseTokenRef(ref);
 
   if (parts[0] === "color") {
-    assert(parts.length >= 4, "Invalid color reference: " + ref + ".");
-    assert(parts[1] === "primitive" || parts[1] === "semantic", "Invalid color layer in " + ref + ".");
+    assert(parts.length >= 3, "Invalid color reference: " + ref + ".");
+    assert(
+      parts[1] === "primitive" || parts[1] === "semantic" || parts[1] === "component",
+      "Invalid color layer in " + ref + ".",
+    );
+
+    if (parts[1] === "component") {
+      return {
+        collectionName: COLLECTIONS.COMPONENTS,
+        variableName: "color/" + parts.slice(2).join("/"),
+      };
+    }
 
     return {
       collectionName: parts[1] === "primitive" ? COLLECTIONS.PRIMITIVES : COLLECTIONS.SEMANTIC,
@@ -780,16 +805,17 @@ function collectColorSemanticDefinitions(node, pathParts, definitions) {
   Object.entries(node).forEach(function (entry) {
     const key = entry[0];
     const value = entry[1];
+    const nextPathParts = pathParts.concat([key]);
 
     if (isPlainObject(value)) {
-      collectColorSemanticDefinitions(value, pathParts.concat([key]), definitions);
+      collectColorSemanticDefinitions(value, nextPathParts, definitions);
       return;
     }
 
     if (isHexColor(value)) {
       definitions.push({
         collectionName: COLLECTIONS.SEMANTIC,
-        name: "color/" + pathParts.concat([key]).join("/"),
+        name: "color/" + nextPathParts.join("/"),
         resolvedType: "COLOR",
         scopes: COLOR_SCOPES,
         value: {
@@ -803,7 +829,7 @@ function collectColorSemanticDefinitions(node, pathParts, definitions) {
     const target = tokenRefToVariableTarget(value);
     definitions.push({
       collectionName: COLLECTIONS.SEMANTIC,
-      name: "color/" + pathParts.concat([key]).join("/"),
+      name: "color/" + nextPathParts.join("/"),
       resolvedType: "COLOR",
       scopes: COLOR_SCOPES,
       value: {
@@ -818,6 +844,52 @@ function collectColorSemanticDefinitions(node, pathParts, definitions) {
 function toColorSemanticDefinitions(tokens) {
   const definitions = [];
   collectColorSemanticDefinitions(tokens.color.semantic, [], definitions);
+  return definitions;
+}
+
+function collectColorComponentDefinitions(node, pathParts, definitions) {
+  Object.entries(node).forEach(function (entry) {
+    const key = entry[0];
+    const value = entry[1];
+    const nextPathParts = pathParts.concat([key]);
+
+    if (isPlainObject(value)) {
+      collectColorComponentDefinitions(value, nextPathParts, definitions);
+      return;
+    }
+
+    if (isHexColor(value)) {
+      definitions.push({
+        collectionName: COLLECTIONS.COMPONENTS,
+        name: "color/" + nextPathParts.join("/"),
+        resolvedType: "COLOR",
+        scopes: COLOR_SCOPES,
+        value: {
+          kind: "RAW",
+          value: hexToRgba(value),
+        },
+      });
+      return;
+    }
+
+    const target = tokenRefToVariableTarget(value);
+    definitions.push({
+      collectionName: COLLECTIONS.COMPONENTS,
+      name: "color/" + nextPathParts.join("/"),
+      resolvedType: "COLOR",
+      scopes: COLOR_SCOPES,
+      value: {
+        kind: "ALIAS",
+        targetCollectionName: target.collectionName,
+        targetName: target.variableName,
+      },
+    });
+  });
+}
+
+function toColorComponentDefinitions(tokens) {
+  const definitions = [];
+  collectColorComponentDefinitions(tokens.color.component, [], definitions);
   return definitions;
 }
 
@@ -871,13 +943,19 @@ async function getOrCreateCollections(collectionNames) {
 async function getExistingVariables(collectionsByName) {
   const variables = [];
 
-  for (const collectionInfo of Object.values(collectionsByName)) {
+  for (const entry of Object.entries(collectionsByName)) {
+    const collectionName = entry[0];
+    const collectionInfo = entry[1];
+
     for (let index = 0; index < collectionInfo.collection.variableIds.length; index += 1) {
       const variableId = collectionInfo.collection.variableIds[index];
       const variable = await figma.variables.getVariableByIdAsync(variableId);
 
       if (variable) {
-        variables.push(variable);
+        variables.push({
+          collectionName: collectionName,
+          variable: variable,
+        });
       }
     }
   }
@@ -886,32 +964,22 @@ async function getExistingVariables(collectionsByName) {
 }
 
 function buildExistingVariableMap(existingVariables, collectionsByName) {
-  const collectionNameById = new Map();
-
-  Object.entries(collectionsByName).forEach(function (entry) {
-    collectionNameById.set(entry[1].collection.id, entry[0]);
-  });
-
   return new Map(
-    existingVariables.map(function (variable) {
+    existingVariables.map(function (record) {
       return [
-        collectionKey(collectionNameById.get(variable.variableCollectionId), variable.name),
-        variable,
+        collectionKey(record.collectionName, record.variable.name),
+        record.variable,
       ];
     }),
   );
 }
 
 function removeObsoleteVariables(existingVariables, desiredVariableKeys, collectionsByName, managedPrefixesByCollection) {
-  const collectionNameById = new Map();
   let removedCount = 0;
 
-  Object.entries(collectionsByName).forEach(function (entry) {
-    collectionNameById.set(entry[1].collection.id, entry[0]);
-  });
-
-  existingVariables.forEach(function (variable) {
-    const collectionName = collectionNameById.get(variable.variableCollectionId);
+  existingVariables.forEach(function (record) {
+    const collectionName = record.collectionName;
+    const variable = record.variable;
     const managedPrefixes = managedPrefixesByCollection[collectionName];
 
     if (!managedPrefixes) {
@@ -932,10 +1000,9 @@ function removeObsoleteVariables(existingVariables, desiredVariableKeys, collect
       return;
     }
 
-    if (typeof variable.remove === "function") {
-      variable.remove();
-      removedCount += 1;
-    }
+    assert(typeof variable.remove === "function", "Variable " + variable.name + " cannot be removed by this runtime.");
+    variable.remove();
+    removedCount += 1;
   });
 
   return removedCount;
@@ -1023,7 +1090,11 @@ function getOrCreateVariable(definition, collectionsByName, existingVariableMap)
 }
 
 async function syncVariableDefinitions(definitions, managedPrefixesByCollection) {
-  const collectionsByName = await getOrCreateCollections([COLLECTIONS.PRIMITIVES, COLLECTIONS.SEMANTIC]);
+  const collectionsByName = await getOrCreateCollections([
+    COLLECTIONS.PRIMITIVES,
+    COLLECTIONS.SEMANTIC,
+    COLLECTIONS.COMPONENTS,
+  ]);
   const existingVariables = await getExistingVariables(collectionsByName);
   const existingVariableMap = buildExistingVariableMap(existingVariables, collectionsByName);
   const syncedVariables = new Map();
@@ -1133,15 +1204,18 @@ async function syncTypography(tokens) {
 async function syncColors(tokens) {
   const primitiveDefinitions = toColorPrimitiveDefinitions(tokens);
   const semanticDefinitions = toColorSemanticDefinitions(tokens);
-  const variableDefinitions = primitiveDefinitions.concat(semanticDefinitions);
+  const componentDefinitions = toColorComponentDefinitions(tokens);
+  const variableDefinitions = primitiveDefinitions.concat(semanticDefinitions, componentDefinitions);
   const syncResult = await syncVariableDefinitions(variableDefinitions, {
     Primitives: ["color/"],
     Semantic: ["color/"],
+    Components: ["color/"],
   });
 
   return {
     primitiveCount: primitiveDefinitions.length,
     semanticCount: semanticDefinitions.length,
+    componentCount: componentDefinitions.length,
     removedVariableCount: syncResult.removedVariableCount,
   };
 }
