@@ -58,7 +58,14 @@ Recommended names:
 - `titleBlock`: grouped textual content of the page header
 - `title`: main page title
 - `subtitle`: secondary textual context below the title
+- `pageTabs`: page-level tab navigation when present
 - `pageToolbar`: single container for page actions and filters
+- `overviewSection`: wrapper for page overview or summary content
+- `summaryGrid`: grouped area that contains summary cards
+- `summaryCard`: regular summary card
+- `highlightCard`: highlighted summary card
+- `listSection`: reusable section wrapper for title/action plus list content
+- `sectionHeader`: section header with title and optional action
 - `listContainer`: outer container for the list block
 - `listHeader`: header row or header container of the list
 - `rowsList`: container that groups repeated row instances
@@ -71,6 +78,7 @@ pageHeader
  ├ titleBlock
  │ ├ title
  │ └ subtitle        (optional)
+ ├ pageTabs          (optional)
  └ pageToolbar       (optional)
 ```
 
@@ -79,6 +87,19 @@ Apply this naming in the current library:
   - `pageHeader`
     - `title`
     - `pageToolbar`
+- project page header
+  - `pageHeader`
+    - `breadcrumb`
+    - `titleBlock`
+      - `title`
+      - `subtitle`
+- project page header with tabs
+  - `pageHeader`
+    - `breadcrumb`
+    - `titleBlock`
+      - `title`
+      - `subtitle`
+    - `pageTabs`
 
 Rules:
 - keep this naming reusable instead of project-specific while the anatomy remains generic
@@ -92,3 +113,77 @@ Triggers for future refinement:
 - list containers that stop following a generic header plus rows structure
 - domain-specific wrappers that are no longer reusable across screens
 - a page header that requires parallel contextual blocks beyond `titleBlock`
+
+---
+
+# Overview Sections
+
+Overview areas that summarize the current entity or page state should use reusable structural naming.
+
+Recommended anatomy:
+
+```text
+overviewSection
+ └ summaryGrid
+   ├ summaryCard
+   └ highlightCard
+```
+
+Rules:
+- use `summaryCard` for regular informational summary blocks
+- use `highlightCard` when the card has a distinct highlighted treatment
+- do not create names by data type such as `budgetCard` or `clientCard` while the structure remains reusable
+
+## Summary Card Items
+
+Items inside the two card variants follow a shared textual structure, but use distinct item wrappers because the highlighted version has its own visual treatment.
+
+Recommended anatomy:
+
+```text
+summaryCard
+ ├ summaryItem
+ │ ├ value
+ │ └ label
+ └ ...
+
+highlightCard
+ ├ highlightItem
+ │ ├ value
+ │ └ label
+ └ ...
+```
+
+Apply this naming in the current project overview:
+- `summaryCard`
+  - each internal frame -> `summaryItem`
+- `highlightCard`
+  - each internal frame -> `highlightItem`
+
+Rules:
+- use `summaryItem` only inside `summaryCard`
+- use `highlightItem` only inside `highlightCard`
+- do not name items by domain content such as `clientInfo`, `budgetInfo`, or `workedHours`
+
+---
+
+# List Sections
+
+Sections that combine a title/action header with a list should use a reusable list section structure.
+
+Recommended anatomy:
+
+```text
+listSection
+ ├ sectionHeader
+ └ listContainer
+   ├ listHeader
+   └ rowsList
+```
+
+Rules:
+- use `listSection` for the outer wrapper of a titled list area
+- use `sectionHeader` when the section header contains a title and optional action
+- use `listContainer` only for the block that wraps `listHeader + rowsList`
+- preserve nested names such as `dataRow`, `dataRowProjects`, and `button`
+- reuse this same pattern for future project lists and similar tabular sections before creating domain-specific names
