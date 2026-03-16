@@ -1,6 +1,6 @@
-# CLAUDE.md — Gestão de Projetos
+# AGENTS.md — Gestão de Projetos
 
-Guia de referência para o Claude Code neste repositório. Leia antes de qualquer tarefa de implementação.
+Guia de referência para o Codex neste repositório. Leia antes de qualquer tarefa de implementação.
 
 ---
 
@@ -172,61 +172,22 @@ Tokens em `specs/design-system/tokens/`:
 
 O repositório é a fonte da verdade. Figma consome esses tokens; não é a origem.
 
-### Geração de CSS vars (automação)
+### Estado atual da automação
 
-Script: `specs/design-system/scripts/generate-css-tokens.mjs`
-
-```bash
-node specs/design-system/scripts/generate-css-tokens.mjs
-```
-
-Saída: `src/app/design-system-tokens.css` (importado em `globals.css`).
-
-**Nunca editar o arquivo gerado à mão.** Para adicionar novos tokens: editar o JSON → rodar script → commitar ambos.
-
-Scripts de Figma disponíveis em `package.json`:
-- `pnpm figma:validate:typography`
-- `pnpm figma:sync:typography`
-
-### Naming das CSS vars
-
-```
---ds-color-primitive-brand-500
---ds-color-global-text-heading
---ds-color-component-button-filled-brand-default-bg
---ds-typography-size-base
---ds-typography-weight-semibold
-```
-
-Utilities Tailwind expostos via `@theme` em `globals.css`:
-- `text-ds-muted`, `bg-ds-brand-500`, `border-ds-subtle` etc.
-
-### Regras de uso em componentes novos
-
-| Proibido | Correto |
-|---|---|
-| Hex literal (`#6B43B8`) | `var(--ds-color-primitive-brand-600)` |
-| OKLCh solto (`oklch(...)`) | Alias via CSS var |
-| `text-gray-500`, `bg-gray-100` | `text-ds-muted`, `bg-ds-subtle` |
-| Espaçamento arbitrário (`gap-3`) | Escala: 4, 8, 12, 16, 24, 32, 40, 48, 56, 64, 72, 80, 96, 120 |
-| Tamanho tipográfico arbitrário | Tokens: `text-ds-sm`, `text-ds-base`, `text-ds-lg` etc. |
-
-### Localização de componentes semânticos
-
-| Tipo | Localização |
-|---|---|
-| Reutilizáveis (`PageHeader`, `PageTabs`) | `src/components/` |
-| Específicos de feature (`DataRowProjects`, `ProjectSummaryCard`) | `src/app/(internal)/[feature]/_components/` |
-
-### Dark mode
-
-Fora de escopo por enquanto. O `.dark` class do shadcn é mantido por compatibilidade mas não expandido para componentes DS.
+- Existe fluxo automatizado de **tipografia** via `specs/design-system/scripts/sync-typography-to-figma.mjs`
+- Scripts disponíveis em `package.json`:
+  - `pnpm figma:validate:typography`
+  - `pnpm figma:sync:typography`
+- O plugin de desenvolvimento do Figma fica em `specs/design-system/figma-plugin/`
+- **Não existe** neste repositório o script `specs/design-system/scripts/generate-css-tokens.mjs`
+- **Não existe** neste repositório o arquivo gerado `src/app/design-system-tokens.css`
 
 ### Regras de manutenção
 
-- Ao evoluir tokens, atualizar JSON + documentação foundation correspondente
-- Se impactar Figma, atualizar o script/plugin que consome esses tokens
-- Não introduzir hex/OKLCH solto quando a intenção for criar regra de DS; formalizar o token no JSON primeiro
+- Ao evoluir tokens, atualizar o JSON do domínio e a documentação foundation correspondente
+- Se a mudança impactar Figma, atualizar também o script/plugin que consome esses tokens
+- Não presumir aliases Tailwind/CSS que ainda não existem no código, como `text-ds-*` ou `bg-ds-*`
+- Evitar introduzir hex/OKLCH solto em componentes novos quando a intenção for criar regra de design system; primeiro formalizar o token no source of truth
 
 ---
 
