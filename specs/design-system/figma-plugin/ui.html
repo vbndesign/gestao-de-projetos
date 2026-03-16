@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Design Tokens Importer</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: Inter, system-ui, sans-serif;
+      }
+
+      body {
+        margin: 0;
+        padding: 16px;
+        background: #0f172a;
+        color: #e2e8f0;
+      }
+
+      .panel {
+        display: grid;
+        gap: 12px;
+      }
+
+      .card {
+        border: 1px solid #334155;
+        border-radius: 12px;
+        padding: 12px;
+        background: #111827;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 18px;
+        line-height: 24px;
+      }
+
+      p,
+      label,
+      li {
+        font-size: 12px;
+        line-height: 18px;
+      }
+
+      label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 320px;
+        resize: vertical;
+        box-sizing: border-box;
+        border-radius: 10px;
+        border: 1px solid #475569;
+        padding: 12px;
+        font: 12px/18px ui-monospace, SFMono-Regular, Consolas, monospace;
+        background: #020617;
+        color: #e2e8f0;
+      }
+
+      .actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      button,
+      .file-button {
+        border: 0;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      button.primary {
+        background: #22c55e;
+        color: #052e16;
+        font-weight: 700;
+      }
+
+      button.secondary,
+      .file-button {
+        background: #1e293b;
+        color: #e2e8f0;
+      }
+
+      button.accent {
+        background: #2563eb;
+        color: #dbeafe;
+        font-weight: 700;
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      input[type="file"] {
+        display: none;
+      }
+
+      .status {
+        white-space: pre-wrap;
+        margin: 0;
+      }
+
+      .hint {
+        color: #94a3b8;
+      }
+
+      .ok {
+        color: #86efac;
+      }
+
+      .error {
+        color: #fca5a5;
+      }
+
+      code {
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="panel">
+      <div class="card">
+        <h1>Design Tokens Importer</h1>
+        <p class="hint">
+          Import typography tokens into <strong>variables + Text Styles</strong>, or import
+          color tokens into <strong>variables only</strong>. The plugin syncs the
+          <code>Primitives</code> and <code>Semantic</code> collections from repository JSON files.
+        </p>
+      </div>
+
+      <div class="card">
+        <label for="token-input">Design tokens JSON</label>
+        <textarea
+          id="token-input"
+          spellcheck="false"
+          placeholder="Paste specs/design-system/tokens/typography.json or colors.json here"
+        ></textarea>
+        <div class="actions">
+          <label class="file-button" for="file-input">Load JSON file</label>
+          <input id="file-input" type="file" accept="application/json,.json" />
+          <button id="format-button" class="secondary" type="button">Format JSON</button>
+          <button id="clear-button" class="secondary" type="button">Clear</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="actions">
+          <button id="import-typography-button" class="primary" type="button">Import typography</button>
+          <button id="import-colors-button" class="accent" type="button">Import colors</button>
+          <button id="close-button" class="secondary" type="button">Close</button>
+        </div>
+        <p id="status" class="status hint">Select or paste a token file to start.</p>
+      </div>
+    </div>
+
+    <script>
+      const tokenInput = document.getElementById("token-input");
+      const fileInput = document.getElementById("file-input");
+      const formatButton = document.getElementById("format-button");
+      const clearButton = document.getElementById("clear-button");
+      const importTypographyButton = document.getElementById("import-typography-button");
+      const importColorsButton = document.getElementById("import-colors-button");
+      const closeButton = document.getElementById("close-button");
+      const status = document.getElementById("status");
+
+      function setStatus(message, kind) {
+        status.textContent = message;
+        status.className = `status ${kind}`;
+      }
+
+      fileInput.addEventListener("change", async (event) => {
+        const file = event.target.files && event.target.files[0];
+
+        if (!file) {
+          return;
+        }
+
+        tokenInput.value = await file.text();
+        setStatus(`Loaded ${file.name}.`, "hint");
+      });
+
+      formatButton.addEventListener("click", () => {
+        try {
+          const formatted = JSON.stringify(JSON.parse(tokenInput.value), null, 2);
+          tokenInput.value = formatted;
+          setStatus("JSON formatted.", "hint");
+        } catch (error) {
+          setStatus(error.message, "error");
+        }
+      });
+
+      clearButton.addEventListener("click", () => {
+        tokenInput.value = "";
+        fileInput.value = "";
+        setStatus("Input cleared.", "hint");
+      });
+
+      function ensureInput(domainLabel) {
+        if (!tokenInput.value.trim()) {
+          setStatus("Paste or load a " + domainLabel + " token file first.", "error");
+          return false;
+        }
+
+        return true;
+      }
+
+      importTypographyButton.addEventListener("click", () => {
+        if (!ensureInput("typography")) {
+          return;
+        }
+
+        setStatus("Importing typography variables and text styles...", "hint");
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: "IMPORT_TYPOGRAPHY",
+              payload: tokenInput.value,
+            },
+          },
+          "*",
+        );
+      });
+
+      importColorsButton.addEventListener("click", () => {
+        if (!ensureInput("color")) {
+          return;
+        }
+
+        setStatus("Importing color variables...", "hint");
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: "IMPORT_COLORS",
+              payload: tokenInput.value,
+            },
+          },
+          "*",
+        );
+      });
+
+      closeButton.addEventListener("click", () => {
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: "CLOSE_PLUGIN",
+            },
+          },
+          "*",
+        );
+      });
+
+      window.onmessage = (event) => {
+        const message = event.data.pluginMessage;
+
+        if (!message) {
+          return;
+        }
+
+        if (message.type === "IMPORT_SUCCESS" && message.domain === "typography") {
+          setStatus(
+            `Typography import completed.\nPrimitives: ${message.summary.primitiveCount}\nSemantic: ${message.summary.semanticCount}\nText styles: ${message.summary.textStyleCount}\nTypography presets: ${message.summary.presetCount}\nRemoved obsolete variables: ${message.summary.removedVariableCount}\nRemoved obsolete text styles: ${message.summary.removedTextStyleCount}`,
+            "ok",
+          );
+          return;
+        }
+
+        if (message.type === "IMPORT_SUCCESS" && message.domain === "colors") {
+          setStatus(
+            `Color import completed.\nPrimitives: ${message.summary.primitiveCount}\nSemantic: ${message.summary.semanticCount}\nComponents: ${message.summary.componentCount}\nRemoved obsolete variables: ${message.summary.removedVariableCount}`,
+            "ok",
+          );
+          return;
+        }
+
+        if (message.type === "IMPORT_ERROR") {
+          setStatus(message.error, "error");
+        }
+      };
+    </script>
+  </body>
+</html>

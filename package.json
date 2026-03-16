@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "figma:validate:typography": "node specs/design-system/scripts/sync-typography-to-figma.mjs --validate",
+    "figma:sync:typography": "node specs/design-system/scripts/sync-typography-to-figma.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",
