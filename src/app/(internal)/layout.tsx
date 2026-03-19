@@ -14,7 +14,7 @@ export default async function InternalLayout({
     <SessionProvider user={user}>
       <div className="flex h-screen bg-ds-canvas">
         <Sidebar />
-        <main className="flex-1 min-h-0 overflow-y-auto px-ds-56 py-ds-32">
+        <main className="flex-1 min-h-0 overflow-y-auto p-ds-32">
           {children}
         </main>
       </div>
