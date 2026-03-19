@@ -8,15 +8,15 @@ type SummaryField = {
   colSpan?: 2
 }
 
-type ProjectSummaryCardProps = {
+type ProjectSummaryProps = {
   fields: SummaryField[]
   className?: string
 }
 
-export function ProjectSummaryCard({
+export function ProjectSummary({
   fields,
   className,
-}: ProjectSummaryCardProps) {
+}: ProjectSummaryProps) {
   return (
     <div
       className={cn(

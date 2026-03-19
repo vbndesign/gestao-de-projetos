@@ -18,7 +18,7 @@ import {
 import { ClienteFormModal } from './cliente-form-modal'
 import { excluirClienteAction } from '@/actions/cliente.actions'
 import { PageHeader } from '@/components/page-header'
-import { ProjectSummaryCard } from '@/components/project-summary-card'
+import { ProjectSummary } from '@/components/project-summary'
 import { DataRow } from '@/components/data-row'
 
 type ClienteData = {
@@ -104,7 +104,7 @@ export function ClienteDetalhe({
         }
       />
 
-      <ProjectSummaryCard
+      <ProjectSummary
         fields={[
           ...(cliente.empresa_organizacao
             ? [{ label: 'Empresa', value: cliente.empresa_organizacao }]
