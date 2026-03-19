@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { SummaryFields } from '@/components/project-summary'
+import { ProjectSummary } from '@/components/project-summary'
 import {
   Dialog,
   DialogContent,
@@ -54,7 +54,7 @@ type ProjetoData = {
   created_at: Date
   updated_at: Date
   cliente: { id: string; nome: string }
-  fases: { id: string; nome: string; status: string; ordem: number; is_fase_geral: boolean }[]
+  fases: { id: string; nome: string; status: string; ordem: number; is_fase_geral: boolean; _count: { tarefas: number } }[]
 }
 
 export function ProjetoDetalhe({
@@ -262,54 +262,17 @@ export function ProjetoDetalhe({
         </AlertDialog>
       </div>
 
-      {/* Info Grid */}
-      <SummaryFields
-        fields={[
-          {
-            label: 'Cliente',
-            value: projeto.cliente.nome,
-            href: `/clientes/${projeto.cliente.id}`,
-          },
-          {
-            label: 'Status',
-            value: (
-              <Badge variant="purple">
-                {STATUS_LABELS[projeto.status] ?? projeto.status}
-              </Badge>
-            ),
-          },
-          {
-            label: 'Data de início',
-            value: new Date(projeto.data_inicio).toLocaleDateString('pt-BR'),
-          },
-          ...(projeto.previsao_entrega
-            ? [{
-                label: 'Previsão de entrega',
-                value: new Date(projeto.previsao_entrega).toLocaleDateString('pt-BR'),
-              }]
-            : []),
-          ...(projeto.data_conclusao_real
-            ? [{
-                label: 'Data de conclusão real',
-                value: new Date(projeto.data_conclusao_real).toLocaleDateString('pt-BR'),
-              }]
-            : []),
-          ...(projeto.descricao
-            ? [{
-                label: 'Descrição',
-                value: <span className="whitespace-pre-wrap">{projeto.descricao}</span>,
-                colSpan: 2 as const,
-              }]
-            : []),
-          {
-            label: 'Criado em',
-            value: new Date(projeto.created_at).toLocaleDateString('pt-BR'),
-          },
-          {
-            label: 'Atualizado em',
-            value: new Date(projeto.updated_at).toLocaleDateString('pt-BR'),
-          },
-        ]}
+      {/* Summary Grid */}
+      <ProjectSummary
+        clienteNome={projeto.cliente.nome}
+        clienteHref={`/clientes/${projeto.cliente.id}`}
+        tarefasConcluidas={0}
+        totalTarefas={projeto.fases.reduce((sum, f) => sum + f._count.tarefas, 0)}
+        horasTrabalhadas={0}
+        horasEstimadas={0}
+        orcamento={null}
+        dataInicio={projeto.data_inicio}
+        previsaoTermino={projeto.previsao_entrega}
       />
 
       {/* Fases */}
