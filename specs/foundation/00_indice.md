@@ -11,6 +11,7 @@ Documentação de referência do projeto. Leia antes de implementar qualquer fea
 | `05_urls.md` | Mapa de rotas, acesso, parâmetros, arquivos Next.js, fluxos de navegação |
 | `06_deploy.md` | Vercel + Prisma + Supabase Auth: vercel.json, env vars, regiões, migrations |
 | `07_design_ui.md` | Integração Figma no fluxo de desenvolvimento: quando usar MCP, workflow por tipo de feature, decisão de componentes |
+| `08_decisoes.md` | Histórico de decisões — fundacionais, padrões de código, DS, git e adaptações (D-01 a D-21) |
 
 **Design System** (`specs/design-system/foundations/`):
 
