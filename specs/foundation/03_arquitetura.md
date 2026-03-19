@@ -428,95 +428,83 @@ export async function resolverPendencia(pendenciaId: string) {
 
 ## Git
 
-### Modelo de branches
+Ver **`GIT_WORKFLOW.md`** para guia completo. Resumo:
+
+### Modelo de branches (simplificado)
 
 ```
-main                     ← produção — nunca push direto
-└── dev                  ← base de desenvolvimento
-    ├── feature/[modulo]-prd-NN   ← uma branch por PRD
-    ├── fix/[escopo]-[descricao]
-    ├── hotfix/[descricao]
-    └── chore/[descricao]
+main                     ← produção, releases estáveis
+└── dev                  ← integration, staging
+    ├── feature/prd-NN-descricao      ← PRD de produto (1 por branch)
+    ├── feature/ds-descricao          ← DS fundacional (spacing, tokens)
+    ├── fix/escopo-descricao          ← tweak rápido ou ajuste DS
+    └── hotfix/descricao              ← crítico em produção
 ```
 
-**Nomenclatura por situação:**
+**Nomenclatura:**
+- `feature/prd-05-pendencias` — PRD único
+- `feature/prd-04a-registros-backend` — PRD com letra (múltiplos sub-PRDs)
+- `feature/ds-spacing-tokens` — DS fundacional
+- `fix/ds-button-hover` — DS tweak/fix
 
-| Módulo tem sub-PRDs? | Padrão |
-|---|---|
-| ✅ Sim (ex: Projetos → 02a, 02b, 02c) | `modulo/projetos` como base + `feature/projetos/prd-02a` por sub-PRD |
-| ❌ Não (PRD único) | `feature/[modulo]-prd-NN` diretamente a partir de `dev` |
+Branches são deletadas após merge. Duração: curta (dias, não semanas).
 
-Exemplos: `feature/tarefas-prd-03`, `feature/horas-prd-06`
+### Design System — 3 tiers
 
-Branches são deletadas localmente após o merge (`git branch -d`).
+| Tier | Tipo | Branch | Documentação |
+|---|---|---|---|
+| Fundacional | Novos tokens (spacing), primitives | `feature/ds-{tema}` | `design-system-frontend-implementation.md` |
+| Feature-driven | Componentes criados para um PRD | Dentro do `feature/prd-*` | PRD doc (seção "Design Reference") |
+| Tweak/fix | Ajuste cor, padding, hover | `fix/ds-{desc}` | Commit descritivo |
 
-### Regras por branch
+Componentes criados **como parte de uma PRD** não têm branch DS separada — ficam dentro da branch `feature/prd-*` do PRD.
 
-| Branch | Push direto | Merge para |
-|---|---|---|
-| `main` | ❌ Nunca | — |
-| `dev` | ❌ Nunca | — |
-| `feature/*` | ✅ | PR → dev |
-| `fix/*` | ✅ | PR → dev |
-| `hotfix/*` | ✅ | PR → main + dev |
-| `chore/*` | ✅ | PR → dev |
+### Conventional Commits
 
-### Convenção de commits (Conventional Commits)
-
+Obrigatório:
 ```
 tipo(escopo): descrição curta no imperativo
 ```
 
-| Tipo | Quando usar |
-|---|---|
-| `feat` | Nova funcionalidade |
-| `fix` | Correção de bug |
-| `refactor` | Refatoração sem mudança de comportamento |
-| `chore` | Config, deps, build |
-| `docs` | Documentação |
-| `test` | Testes |
-| `perf` | Performance |
-| `style` | Formatação, lint |
+**Tipos:** `feat` · `fix` · `refactor` · `chore` · `docs` · `test` · `perf` · `style`
 
-**Escopos:** `cliente` · `projeto` · `fase` · `tarefa` · `timeline` · `pendencia` · `horas` · `portal` · `auth` · `db` · `ui` · `config`
+**Escopos:** `cliente` · `projeto` · `fase` · `tarefa` · `timeline` · `pendencia` · `horas` · `registros` · `portal` · `auth` · `db` · `ui` · `design-system` · `config`
 
 **Exemplos:**
 ```
-feat(projeto): criar projeto com fase Geral automática
-feat(fase): implementar reordenação com atualização de ordem
-feat(timeline): adicionar evento ao resolver pendência
-fix(fase): impedir exclusão de fase marcada como is_fase_geral
-refactor(queries): separar queries de portal e interno
-chore(supabase): configurar variáveis de ambiente e cliente SSR
+feat(pendencia): criar modelo e queries
+feat(registros): form de reunião com validação
+fix(design-system): ajustar hover state button outline
+refactor(queries): separar portal e interno
+chore(deps): atualizar tailwindcss
+docs(readme): adicionar instruções
 ```
 
 ### Estratégia de merge
 
-- `feature/*` → `dev` — **Merge commit `--no-ff`** (mantém histórico da branch visível na árvore)
-- `dev` → `main` — **Merge commit** (registra ponto de release)
-- `hotfix/*` → `main` + `dev` — Merge commit + cherry-pick
+`feature/*` → `dev` → `main` com **`git merge --no-ff`** sempre. Preserva árvore de commits.
 
 ### Versionamento com tags (Semver)
 
-Convenção adotada para o MVP: **um tag por PRD concluído**.
+**Um tag por módulo funcional completo**, não por sub-PRD.
 
 | Tag | Significado |
 |---|---|
-| `v0.0.0-specs` | Marco inicial — specs finalizadas, zero código implementado ✅ |
-| `v0.1.0` | PRD-00a concluído (setup) |
-| `v0.2.0` | PRD-00b concluído (auth + db) |
-| `v0.3.0` | PRD-01 concluído (clientes) |
-| … | continua por PRD |
-| `v1.0.0` | MVP completo (todos os PRDs concluídos) |
+| `v0.0.0-specs` | Specs finalizadas ✅ |
+| `v0.1.0` | Setup (PRD-00a + 00b) |
+| `v0.2.0` | Módulo Clientes (PRD-01) |
+| `v0.3.0` | Módulo Projetos (PRD-02a + 02b + 02c + 03) |
+| `v0.4.0` | Módulo Registros (PRD-04a + 04b) |
+| `v0.5.0` | Módulo Pendências (PRD-05 + complementares) |
+| `v1.0.0` | MVP completo |
 
 ```bash
-# Após cada PRD concluído e testado
-git tag -a v0.1.0 -m "PRD-00a: setup Next.js + Tailwind + shadcn"
-git push origin v0.1.0
+git tag -a v0.5.0 -m "Módulo Pendências completo"
+git push origin v0.5.0
 ```
 
-> Em produção, o Vercel detecta tags automaticamente e faz deploy. Tags de PRD intermediários (`v0.x.0`) são para rastreabilidade — o deploy de produção usa `v1.0.0` em diante.
+Vercel detecta tags e faz deploy.
 
 ### Proteção de branches (GitHub)
 
-`main`: Require PR before merging · Require 1 approval · Do not allow bypassing
+`main` + `dev`: Require PR before merging · Require 1 approval · Dismiss stale reviews
