@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "./design-system-tokens.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -38,48 +39,145 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-sm: var(--ds-radius-primitive-sm);
+  --radius-md: var(--ds-radius-primitive-md);
+  --radius-lg: var(--ds-radius-primitive-lg);
+  --radius-xl: var(--ds-radius-primitive-xl);
+  --radius-2xl: var(--ds-radius-primitive-xl);
+  --radius-3xl: var(--ds-radius-primitive-xl);
+  --radius-4xl: var(--ds-radius-primitive-full);
+
+  /* ── Design System: Radius ── */
+  --radius-ds-none: var(--ds-radius-primitive-none);
+  --radius-ds-xs: var(--ds-radius-primitive-xs);
+  --radius-ds-sm: var(--ds-radius-primitive-sm);
+  --radius-ds-md: var(--ds-radius-primitive-md);
+  --radius-ds-lg: var(--ds-radius-primitive-lg);
+  --radius-ds-xl: var(--ds-radius-primitive-xl);
+  --radius-ds-full: var(--ds-radius-primitive-full);
+
+  /* ── Design System: Spacing ── */
+  --spacing-ds-4: var(--ds-spacing-4);
+  --spacing-ds-8: var(--ds-spacing-8);
+  --spacing-ds-12: var(--ds-spacing-12);
+  --spacing-ds-16: var(--ds-spacing-16);
+  --spacing-ds-24: var(--ds-spacing-24);
+  --spacing-ds-32: var(--ds-spacing-32);
+  --spacing-ds-40: var(--ds-spacing-40);
+  --spacing-ds-48: var(--ds-spacing-48);
+  --spacing-ds-56: var(--ds-spacing-56);
+  --spacing-ds-64: var(--ds-spacing-64);
+  --spacing-ds-72: var(--ds-spacing-72);
+  --spacing-ds-80: var(--ds-spacing-80);
+  --spacing-ds-96: var(--ds-spacing-96);
+  --spacing-ds-120: var(--ds-spacing-120);
+
+  /* ── Design System: Primitive — Brand scale ── */
+  --color-ds-brand-50: var(--ds-color-primitive-brand-50);
+  --color-ds-brand-100: var(--ds-color-primitive-brand-100);
+  --color-ds-brand-200: var(--ds-color-primitive-brand-200);
+  --color-ds-brand-300: var(--ds-color-primitive-brand-300);
+  --color-ds-brand-400: var(--ds-color-primitive-brand-400);
+  --color-ds-brand-500: var(--ds-color-primitive-brand-500);
+  --color-ds-brand-600: var(--ds-color-primitive-brand-600);
+  --color-ds-brand-700: var(--ds-color-primitive-brand-700);
+  --color-ds-brand-800: var(--ds-color-primitive-brand-800);
+  --color-ds-brand-900: var(--ds-color-primitive-brand-900);
+
+  /* ── Design System: Semantic — Backgrounds ── */
+  --color-ds-canvas: var(--ds-color-semantic-bg-canvas);
+  --color-ds-surface: var(--ds-color-semantic-bg-surface);
+  --color-ds-subtle: var(--ds-color-semantic-bg-subtle);
+  --color-ds-inverse: var(--ds-color-semantic-bg-inverse);
+
+  /* ── Design System: Semantic — Text ── */
+  --color-ds-heading: var(--ds-color-semantic-text-heading);
+  --color-ds-body: var(--ds-color-semantic-text-body);
+  --color-ds-muted: var(--ds-color-semantic-text-muted);
+  --color-ds-placeholder: var(--ds-color-semantic-text-placeholder);
+
+  /* ── Design System: Semantic — Borders ── */
+  --color-ds-border: var(--ds-color-semantic-border-default);
+  --color-ds-border-subtle: var(--ds-color-semantic-border-subtle);
+  --color-ds-border-strong: var(--ds-color-semantic-border-strong);
+  --color-ds-border-brand: var(--ds-color-semantic-border-brand);
+
+  /* ── Design System: Semantic — Feedback ── */
+  --color-ds-success: var(--ds-color-primitive-success-500);
+  --color-ds-warning: var(--ds-color-primitive-warning-500);
+  --color-ds-danger: var(--ds-color-primitive-danger-500);
+  --color-ds-info: var(--ds-color-primitive-info-500);
+
+  /* ── Design System: Typography ── */
+  --font-size-ds-sm: var(--ds-typography-size-sm);
+  --font-size-ds-base: var(--ds-typography-size-base);
+  --font-size-ds-lg: var(--ds-typography-size-lg);
+  --font-size-ds-xl: var(--ds-typography-size-xl);
+  --font-size-ds-h6: var(--ds-typography-size-h6);
+  --font-size-ds-h5: var(--ds-typography-size-h5);
+  --font-size-ds-h4: var(--ds-typography-size-h4);
+  --font-size-ds-h3: var(--ds-typography-size-h3);
+  --font-size-ds-h2: var(--ds-typography-size-h2);
+  --font-size-ds-h1: var(--ds-typography-size-h1);
+  --line-height-ds-sm: var(--ds-typography-line-height-sm);
+  --line-height-ds-base: var(--ds-typography-line-height-base);
+  --line-height-ds-lg: var(--ds-typography-line-height-lg);
+  --line-height-ds-xl: var(--ds-typography-line-height-xl);
+  --line-height-ds-h6: var(--ds-typography-line-height-h6);
+  --line-height-ds-h5: var(--ds-typography-line-height-h5);
+  --line-height-ds-h4: var(--ds-typography-line-height-h4);
+  --line-height-ds-h3: var(--ds-typography-line-height-h3);
+  --line-height-ds-h2: var(--ds-typography-line-height-h2);
+  --line-height-ds-h1: var(--ds-typography-line-height-h1);
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  /* Core surfaces */
+  --background: var(--ds-color-semantic-bg-canvas);
+  --foreground: var(--ds-color-semantic-text-heading);
+  --card: var(--ds-color-semantic-bg-surface);
+  --card-foreground: var(--ds-color-semantic-text-heading);
+  --popover: var(--ds-color-semantic-bg-surface);
+  --popover-foreground: var(--ds-color-semantic-text-heading);
+
+  /* Brand */
+  --primary: var(--ds-color-semantic-bg-brand);
+  --primary-foreground: var(--ds-color-primitive-neutral-0);
+
+  /* Neutral variants */
+  --secondary: var(--ds-color-semantic-bg-subtle);
+  --secondary-foreground: var(--ds-color-semantic-text-heading);
+  --muted: var(--ds-color-semantic-bg-subtle);
+  --muted-foreground: var(--ds-color-semantic-text-muted);
+  --accent: var(--ds-color-semantic-family-brand-subtle);
+  --accent-foreground: var(--ds-color-semantic-text-heading);
+
+  /* Feedback */
+  --destructive: var(--ds-color-primitive-danger-500);
+
+  /* Boundaries */
+  --border: var(--ds-color-semantic-border-default);
+  --input: var(--ds-color-semantic-border-default);
+  --ring: var(--ds-color-semantic-border-focus);
+
+  /* Charts — kept as OKLCh (not part of DS yet) */
   --chart-1: oklch(0.809 0.105 251.813);
   --chart-2: oklch(0.623 0.214 259.815);
   --chart-3: oklch(0.546 0.245 262.881);
   --chart-4: oklch(0.488 0.243 264.376);
   --chart-5: oklch(0.424 0.199 265.638);
+
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+
+  /* Sidebar */
+  --sidebar: var(--ds-color-semantic-bg-surface);
+  --sidebar-foreground: var(--ds-color-semantic-text-heading);
+  --sidebar-primary: var(--ds-color-semantic-bg-brand);
+  --sidebar-primary-foreground: var(--ds-color-primitive-neutral-0);
+  --sidebar-accent: var(--ds-color-semantic-family-brand-subtle);
+  --sidebar-accent-foreground: var(--ds-color-semantic-text-heading);
+  --sidebar-border: var(--ds-color-semantic-border-default);
+  --sidebar-ring: var(--ds-color-semantic-border-focus);
 }
 
 .dark {

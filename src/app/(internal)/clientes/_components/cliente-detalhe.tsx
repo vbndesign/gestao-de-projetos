@@ -2,7 +2,6 @@
 
 import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
@@ -18,6 +17,9 @@ import {
 } from '@/components/ui/alert-dialog'
 import { ClienteFormModal } from './cliente-form-modal'
 import { excluirClienteAction } from '@/actions/cliente.actions'
+import { PageHeader } from '@/components/page-header'
+import { SummaryFields } from '@/components/project-summary'
+import { DataRow } from '@/components/data-row'
 
 type ClienteData = {
   id: string
@@ -62,107 +64,85 @@ export function ClienteDetalhe({
 
   return (
     <div className="space-y-8">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-1 text-sm text-muted-foreground">
-        <Link href="/clientes" className="hover:text-foreground">
-          Clientes
-        </Link>
-        <span>/</span>
-        <span className="text-foreground">{cliente.nome}</span>
-      </nav>
-
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">{cliente.nome}</h1>
-          {cliente.empresa_organizacao && (
-            <p className="text-muted-foreground">{cliente.empresa_organizacao}</p>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <ClienteFormModal
-            cliente={cliente}
-            trigger={<Button variant="outline">Editar</Button>}
-          />
-          <AlertDialog>
-            <AlertDialogTrigger
-              render={
-                <Button variant="destructive" disabled={isPending}>
-                  Excluir
-                </Button>
-              }
+      <PageHeader
+        title={cliente.nome}
+        breadcrumbs={[
+          { label: 'Clientes', href: '/clientes' },
+          { label: cliente.nome },
+        ]}
+        actions={
+          <div className="flex items-center gap-2">
+            <ClienteFormModal
+              cliente={cliente}
+              trigger={<Button variant="outline">Editar</Button>}
             />
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Excluir cliente</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Tem certeza que deseja excluir &quot;{cliente.nome}&quot;? Todos os
-                  projetos e dados vinculados serão removidos permanentemente.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction variant="destructive" onClick={handleExcluir}>
-                  Excluir
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
-      </div>
+            <AlertDialog>
+              <AlertDialogTrigger
+                render={
+                  <Button variant="destructive" disabled={isPending}>
+                    Excluir
+                  </Button>
+                }
+              />
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Excluir cliente</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Tem certeza que deseja excluir &quot;{cliente.nome}&quot;? Todos os
+                    projetos e dados vinculados serão removidos permanentemente.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction variant="destructive" onClick={handleExcluir}>
+                    Excluir
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        }
+      />
 
-      {/* Info */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        {cliente.email_principal && (
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">Email</p>
-            <p>{cliente.email_principal}</p>
-          </div>
-        )}
-        {cliente.telefone_contato && (
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">Telefone</p>
-            <p>{cliente.telefone_contato}</p>
-          </div>
-        )}
-        {cliente.observacoes && (
-          <div className="sm:col-span-2">
-            <p className="text-sm font-medium text-muted-foreground">Observações</p>
-            <p className="whitespace-pre-wrap">{cliente.observacoes}</p>
-          </div>
-        )}
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">Criado em</p>
-          <p>{new Date(cliente.created_at).toLocaleDateString('pt-BR')}</p>
-        </div>
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">Atualizado em</p>
-          <p>{new Date(cliente.updated_at).toLocaleDateString('pt-BR')}</p>
-        </div>
-      </div>
+      <SummaryFields
+        fields={[
+          ...(cliente.empresa_organizacao
+            ? [{ label: 'Empresa', value: cliente.empresa_organizacao }]
+            : []),
+          ...(cliente.email_principal
+            ? [{ label: 'Email', value: cliente.email_principal }]
+            : []),
+          ...(cliente.telefone_contato
+            ? [{ label: 'Telefone', value: cliente.telefone_contato }]
+            : []),
+          ...(cliente.observacoes
+            ? [{ label: 'Observações', value: cliente.observacoes, colSpan: 2 as const }]
+            : []),
+          { label: 'Criado em', value: new Date(cliente.created_at).toLocaleDateString('pt-BR') },
+          { label: 'Atualizado em', value: new Date(cliente.updated_at).toLocaleDateString('pt-BR') },
+        ]}
+      />
 
-      {/* Projetos */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Projetos</h2>
+        <h2 className="text-[length:var(--ds-typography-size-lg)] font-semibold leading-[var(--ds-typography-line-height-lg)] text-ds-heading">
+          Projetos
+        </h2>
         {projetos.length === 0 ? (
-          <p className="text-muted-foreground">Nenhum projeto vinculado.</p>
+          <p className="py-8 text-center text-ds-muted">Nenhum projeto vinculado.</p>
         ) : (
-          <div className="divide-y rounded-lg border">
+          <div className="overflow-hidden rounded-lg border border-[var(--ds-color-component-data-row-default-border)]">
             {projetos.map((projeto) => (
-              <div key={projeto.id} className="flex items-center justify-between px-4 py-3">
-                <div>
-                  <Link
-                    href={`/projetos/${projeto.id}`}
-                    className="font-medium text-primary hover:underline"
-                  >
-                    {projeto.nome}
-                  </Link>
-                  <div className="flex gap-3 text-sm text-muted-foreground">
+              <DataRow
+                key={projeto.id}
+                href={`/projetos/${projeto.id}`}
+                title={projeto.nome}
+                metadata={
+                  <>
                     <span>{projeto.status}</span>
                     <span>{new Date(projeto.data_inicio).toLocaleDateString('pt-BR')}</span>
-                  </div>
-                </div>
-              </div>
+                  </>
+                }
+              />
             ))}
           </div>
         )}

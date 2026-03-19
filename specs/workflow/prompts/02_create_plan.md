@@ -60,7 +60,13 @@ Assess what exists in the project:
    - Check whether `src/` exists and has application code
    - This determines how research sub-tasks are structured (see below)
 
-3. **Spawn initial research tasks to gather context**:
+3. **For features with relevant UI (PRD has "Design Reference"):**
+   - Do not plan visual frontend without identified Figma nodes
+   - Check if the research document has a "Design Reference Analysis" section — if not, alert the user
+   - Include an explicit component inventory (create / reuse / extend) before writing the plan
+   - Decide whether this is a visual refactor or new implementation (affects phasing)
+
+4. **Spawn initial research tasks to gather context**:
    Before asking the user any questions, use native agents to research in parallel:
 
    **For spec/doc research (specs-only or mixed mode):**
@@ -75,19 +81,19 @@ Assess what exists in the project:
 
    All agents return detailed explanations with file:line references.
 
-4. **Read all files identified by research tasks**:
+5. **Read all files identified by research tasks**:
    - After research tasks complete, read ALL files they identified as relevant
    - Read them FULLY into the main context
    - This ensures you have complete understanding before proceeding
 
-5. **Analyze and verify understanding**:
+6. **Analyze and verify understanding**:
    - **Specs-only:** Cross-reference the PRD with foundation specs and the research document
    - **Codebase/Mixed:** Cross-reference the PRD requirements with actual code
    - Identify any discrepancies or misunderstandings
    - Note assumptions that need verification
    - Determine true scope based on project reality
 
-6. **Present informed understanding and focused questions**:
+7. **Present informed understanding and focused questions**:
    ```
    Based on the PRD and my research of the project, I understand we need to [accurate summary].
 
@@ -385,6 +391,18 @@ After structure approval:
 - Build backend logic in services
 - Add Server Actions
 - Implement UI last
+
+### For New Features with UI (PRD has "Design Reference"):
+- Phase A: Data — schema, queries, actions, services
+- Phase B: Semantic components — new or extended (via Figma MCP, node by node)
+- Phase C: Screen composition — using Phase B components
+- Phase D: Visual validation — screenshot vs. Figma node by node, fine-tuning
+- Phase E: Code Connect — only after component stabilizes (2+ visual validations)
+
+Component inventory is required before writing Phase B:
+- Reuse existing: [which component, from which file]
+- Extend primitive: [which, how — variant, wrapper or composition]
+- Create new: [Level 1/2/3, why, Figma node ID]
 
 ### For Refactoring:
 - Document current behavior

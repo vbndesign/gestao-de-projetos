@@ -20,6 +20,16 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
+
+        /* ── Design System variants ── */
+        "filled-brand":
+          "bg-[var(--ds-color-component-button-filled-brand-default-bg)] text-[var(--ds-color-component-button-filled-brand-default-text)] hover:bg-[var(--ds-color-component-button-filled-brand-hover-bg)] disabled:bg-[var(--ds-color-component-button-filled-brand-disabled-bg)]",
+        "filled-neutral":
+          "bg-[var(--ds-color-component-button-filled-neutral-default-bg)] text-[var(--ds-color-component-button-filled-neutral-default-text)] hover:bg-[var(--ds-color-component-button-filled-neutral-hover-bg)] disabled:bg-[var(--ds-color-component-button-filled-neutral-disabled-bg)]",
+        "outline-brand":
+          "border-[var(--ds-color-component-button-outline-brand-default-border)] bg-[var(--ds-color-component-button-outline-brand-default-bg)] text-[var(--ds-color-component-button-outline-brand-default-text)] hover:border-[var(--ds-color-component-button-outline-brand-hover-border)] hover:bg-[var(--ds-color-component-button-outline-brand-hover-bg)] hover:text-[var(--ds-color-component-button-outline-brand-hover-text)] disabled:border-[var(--ds-color-component-button-outline-brand-disabled-border)] disabled:text-[var(--ds-color-component-button-outline-brand-disabled-text)]",
+        "outline-neutral":
+          "border-[var(--ds-color-component-button-outline-neutral-default-border)] bg-[var(--ds-color-component-button-outline-neutral-default-bg)] text-[var(--ds-color-component-button-outline-neutral-default-text)] hover:border-[var(--ds-color-component-button-outline-neutral-hover-border)] hover:bg-[var(--ds-color-component-button-outline-neutral-hover-bg)] hover:text-[var(--ds-color-component-button-outline-neutral-hover-text)] disabled:border-[var(--ds-color-component-button-outline-neutral-disabled-border)] disabled:text-[var(--ds-color-component-button-outline-neutral-disabled-text)]",
       },
       size: {
         default:

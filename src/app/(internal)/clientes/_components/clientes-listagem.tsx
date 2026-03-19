@@ -2,7 +2,6 @@
 
 import { useTransition } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,6 +18,8 @@ import {
 } from '@/components/ui/alert-dialog'
 import { ClienteFormModal } from './cliente-form-modal'
 import { excluirClienteAction } from '@/actions/cliente.actions'
+import { PageHeader } from '@/components/page-header'
+import { DataRow } from '@/components/data-row'
 
 type ClienteListItem = {
   id: string
@@ -67,10 +68,10 @@ export function ClientesListagem({ clientes }: { clientes: ClienteListItem[] }) 
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold">Clientes</h1>
-        <ClienteFormModal trigger={<Button>Novo cliente</Button>} />
-      </div>
+      <PageHeader
+        title="Clientes"
+        actions={<ClienteFormModal trigger={<Button variant="filled-brand">Novo cliente</Button>} />}
+      />
 
       <Input
         placeholder="Buscar por nome ou empresa..."
@@ -80,72 +81,63 @@ export function ClientesListagem({ clientes }: { clientes: ClienteListItem[] }) 
       />
 
       {filtrados.length === 0 ? (
-        <p className="text-muted-foreground py-8 text-center">
+        <p className="py-8 text-center text-ds-muted">
           {busca ? 'Nenhum cliente encontrado.' : 'Nenhum cliente cadastrado.'}
         </p>
       ) : (
-        <div className="divide-y rounded-lg border">
+        <div className="overflow-hidden rounded-lg border border-[var(--ds-color-component-data-row-default-border)]">
           {filtrados.map((cliente) => (
-            <div
+            <DataRow
               key={cliente.id}
-              className="flex items-center justify-between gap-4 px-4 py-3"
-            >
-              <div className="min-w-0 flex-1">
-                <Link
-                  href={`/clientes/${cliente.id}`}
-                  className="font-medium text-primary hover:underline"
-                >
-                  {cliente.nome}
-                </Link>
-                <div className="flex gap-3 text-sm text-muted-foreground">
-                  {cliente.empresa_organizacao && (
-                    <span>{cliente.empresa_organizacao}</span>
-                  )}
-                  {cliente.email_principal && (
-                    <span>{cliente.email_principal}</span>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-1">
-                <ClienteFormModal
-                  cliente={{
-                    ...cliente,
-                    telefone_contato: null,
-                    observacoes: null,
-                  }}
-                  trigger={<Button variant="ghost" size="sm">Editar</Button>}
-                />
-
-                <AlertDialog>
-                  <AlertDialogTrigger
-                    render={
-                      <Button variant="destructive" size="sm" disabled={isPending}>
-                        Excluir
-                      </Button>
-                    }
+              href={`/clientes/${cliente.id}`}
+              title={cliente.nome}
+              metadata={
+                <>
+                  {cliente.empresa_organizacao && <span>{cliente.empresa_organizacao}</span>}
+                  {cliente.email_principal && <span>{cliente.email_principal}</span>}
+                </>
+              }
+              trailing={
+                <div className="flex items-center gap-1">
+                  <ClienteFormModal
+                    cliente={{
+                      ...cliente,
+                      telefone_contato: null,
+                      observacoes: null,
+                    }}
+                    trigger={<Button variant="ghost" size="sm">Editar</Button>}
                   />
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Excluir cliente</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Tem certeza que deseja excluir &quot;{cliente.nome}&quot;? Todos os
-                        projetos e dados vinculados serão removidos permanentemente.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                      <AlertDialogAction
-                        variant="destructive"
-                        onClick={() => handleExcluir(cliente.id)}
-                      >
-                        Excluir
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            </div>
+
+                  <AlertDialog>
+                    <AlertDialogTrigger
+                      render={
+                        <Button variant="destructive" size="sm" disabled={isPending}>
+                          Excluir
+                        </Button>
+                      }
+                    />
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Excluir cliente</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Tem certeza que deseja excluir &quot;{cliente.nome}&quot;? Todos os
+                          projetos e dados vinculados serão removidos permanentemente.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                          variant="destructive"
+                          onClick={() => handleExcluir(cliente.id)}
+                        >
+                          Excluir
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              }
+            />
           ))}
         </div>
       )}

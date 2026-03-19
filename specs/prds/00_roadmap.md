@@ -20,11 +20,12 @@ Sequência de implementação do MVP. Cada PRD é um input direto para o fluxo R
 | PRD-05a | Pendência | Backend + UI — service R3 · actions · form com resolução |
 | PRD-05b | Documento + Mudança de Direção | Backend + UI — ambos sem regra complexa |
 | PRD-06 | Lançamentos de Horas | CRUD completo (schema · queries · actions · UI) |
-| PRD-07a | Timeline Backend | queries internas + getTimelinePortal (R4) |
-| PRD-07b | Timeline UI | renderização no painel interno |
-| PRD-08a | Portal Estrutura | rota pública · slug · layout · visão geral do projeto |
-| PRD-08b | Portal Conteúdo | fases · tarefas · timeline filtrada · documentos |
-| PRD-09 | Deploy | vercel.json · env vars · região · Prisma migrate deploy |
+| PRD-07 | Perf — Initial Load | Streaming do layout interno (Suspense + skeleton) |
+| PRD-08a | Timeline Backend | queries internas + getTimelinePortal (R4) |
+| PRD-08b | Timeline UI | renderização no painel interno |
+| PRD-09a | Portal Estrutura | rota pública · slug · layout · visão geral do projeto |
+| PRD-09b | Portal Conteúdo | fases · tarefas · timeline filtrada · documentos |
+| PRD-10 | Deploy | vercel.json · env vars · região · Prisma migrate deploy |
 
 ---
 
@@ -45,16 +46,17 @@ Sequência de implementação do MVP. Cada PRD é um input direto para o fluxo R
 | PRD-00b | ✅ concluído |
 | PRD-01 | ✅ concluído |
 | PRD-02a | ✅ concluído |
-| PRD-02b | pendente |
-| PRD-02c | pendente |
-| PRD-03 | pendente |
+| PRD-02b | ✅ concluído |
+| PRD-02c | ✅ concluído |
+| PRD-03 | ✅ concluído |
 | PRD-04a | pendente |
 | PRD-04b | pendente |
 | PRD-05a | pendente |
 | PRD-05b | pendente |
 | PRD-06 | pendente |
-| PRD-07a | pendente |
-| PRD-07b | pendente |
+| PRD-07 | pendente |
 | PRD-08a | pendente |
 | PRD-08b | pendente |
-| PRD-09 | pendente |
+| PRD-09a | pendente |
+| PRD-09b | pendente |
+| PRD-10 | pendente |

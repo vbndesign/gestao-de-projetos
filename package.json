@@ -6,10 +6,19 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "figma:validate:typography": "node specs/design-system/scripts/sync-typography-to-figma.mjs --validate",
+    "figma:sync:typography": "node specs/design-system/scripts/sync-typography-to-figma.mjs",
+    "figma:validate:colors": "node specs/design-system/scripts/sync-colors-to-figma.mjs --validate",
+    "figma:sync:colors": "node specs/design-system/scripts/sync-colors-to-figma.mjs",
+    "figma:validate:spacing": "node specs/design-system/scripts/sync-spacing-to-figma.mjs --validate",
+    "figma:sync:spacing": "node specs/design-system/scripts/sync-spacing-to-figma.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@hookform/resolvers": "^5.2.2",
     "@prisma/client": "^5.22.0",
     "@supabase/ssr": "^0.9.0",

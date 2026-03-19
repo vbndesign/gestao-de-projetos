@@ -18,6 +18,7 @@ export const getProjetosFiltrados = cache(
         previsao_entrega: true,
         created_at: true,
         cliente: { select: { id: true, nome: true } },
+        fases: { select: { _count: { select: { tarefas: true } } } },
       },
       orderBy: { created_at: 'desc' },
     })
@@ -47,6 +48,7 @@ export const getProjetoById = cache(async (id: string) => {
           status: true,
           ordem: true,
           is_fase_geral: true,
+          _count: { select: { tarefas: true } },
         },
         orderBy: { ordem: 'asc' },
       },
