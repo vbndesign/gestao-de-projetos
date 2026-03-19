@@ -28,6 +28,11 @@ Plans are carefully designed, but reality can be messy. Your job is to:
 
 When things don't match the plan exactly, think about why and communicate clearly. The plan is your guide, but your judgment matters too.
 
+For features with UI (plan has Phases A-D):
+- Follow the order: data → semantic components → composition → visual validation
+- Use Figma MCP component by component — never "implement the whole screen at once"
+- Each new component is visually validated before moving to the next
+
 If you encounter a mismatch:
 - STOP and think deeply about why the plan can't be followed
 - Present the issue clearly:
@@ -59,6 +64,16 @@ After implementing a phase:
 
   Let me know when manual testing is complete so I can proceed to Phase [N+1].
   ```
+
+### Visual Verification (for phases with UI components)
+
+If the phase implements semantic components (Phase B or D in the plan):
+1. Use `get_screenshot(fileKey, nodeId)` to capture the design in Figma
+2. Compare visually with the implemented component
+3. Adjust spacing, colors (DS tokens), states (hover, disabled) until aligned
+4. Only advance to the next phase after visual alignment is confirmed
+
+Skip this for data-only phases (Phase A).
 
 If instructed to execute multiple phases consecutively, skip the pause until the last phase. Otherwise, assume you are just doing one phase.
 

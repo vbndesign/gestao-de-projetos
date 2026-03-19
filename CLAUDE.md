@@ -229,7 +229,7 @@ Para qualquer feature nova com UI relevante, seguir o fluxo definido em `07_desi
 ```
 PRD  →  seção "Design Reference" (nodes Figma identificados)
   ↓
-research  →  seção "UI Delta" (estado atual vs. esperado)
+research  →  seção "Design Reference Analysis" (estado atual vs. esperado)
   ↓
 create_plan  →  inventário de componentes (criar / reutilizar / estender)
   ↓

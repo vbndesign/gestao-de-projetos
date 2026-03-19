@@ -46,7 +46,7 @@ Este documento formaliza como **Figma entra no processo de desenvolvimento de fr
 ```
 PRD (+ seção Design Reference: nodes Figma, telas, componentes candidatos)
   ↓
-research_codebase (+ seção UI Delta: estado atual vs. esperado, Figma nodes a consultar)
+research_codebase (+ seção Design Reference Analysis: estado atual vs. esperado, Figma nodes a consultar)
   ↓
 create_plan (com inventário de componentes antes de começar)
   → Phase A: contrato de dados (queries / actions / services)
@@ -107,10 +107,10 @@ Adicionar seção obrigatória para features com UI:
 
 ### 2. Research Codebase (`specs/workflow/prompts/01_research_codebase.md`)
 
-Adicionar seção **UI Delta** (apenas se a feature tem frontend):
+Adicionar seção **Design Reference Analysis** (apenas se a feature tem frontend):
 
 ```markdown
-## UI Delta (se feature tem UI)
+## Design Reference Analysis (se feature tem UI)
 
 ### Estado Atual
 [O que existe: componentes, markup, classes usadas]
@@ -295,7 +295,7 @@ src/app/(internal)/clientes/_components/
 ### Passo 2: Research (specs/workflow/research/2026-XX-XX-prd-05-tarefas.md)
 
 ```markdown
-## UI Delta
+## Design Reference Analysis
 
 ### Componentes Reutilizáveis Identificados
 - DataRow pode ser usado para listagem de tarefas (já validado em Projetos e Clientes)
@@ -358,7 +358,7 @@ Phase E: Code Connect (depois de estabilizar)
 ## Checklist: Antes de Começar Feature com UI
 
 - [ ] PRD tem seção "Design Reference" com nodes Figma identificados
-- [ ] Research tem seção "UI Delta" mapeando estado atual vs. esperado
+- [ ] Research tem seção "Design Reference Analysis" mapeando estado atual vs. esperado
 - [ ] Create plan tem inventário explícito de componentes (criar/reutilizar/estender)
 - [ ] Create plan não planeja UI visual sem Figma nodes identificados
 - [ ] Implementação respeita order: dados → componentes semânticos → telas → validação visual

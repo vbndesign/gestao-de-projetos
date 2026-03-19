@@ -182,6 +182,28 @@ O repositório é a fonte da verdade. Figma consome esses tokens; não é a orig
 - **Não existe** neste repositório o script `specs/design-system/scripts/generate-css-tokens.mjs`
 - **Não existe** neste repositório o arquivo gerado `src/app/design-system-tokens.css`
 
+### Figma Workflow (features with UI)
+
+When a PRD has a "Design Reference" section with Figma node IDs, follow this order:
+
+```
+PRD (Design Reference: Figma nodes, candidate components)
+  ↓
+research → Design Reference Analysis section
+  (current state, reusable components, nodes to consult)
+  ↓
+create_plan → component inventory + phasing:
+  Phase A: data (queries, actions, services)
+  Phase B: semantic components (via Figma MCP — node by node)
+  Phase C: screen composition
+  Phase D: visual validation against Figma
+  Phase E: Code Connect (after component stabilizes)
+  ↓
+implement_plan
+```
+
+For backend-only features (no PRD "Design Reference"), skip all of the above — no Figma required.
+
 ### Regras de manutenção
 
 - Ao evoluir tokens, atualizar o JSON do domínio e a documentação foundation correspondente

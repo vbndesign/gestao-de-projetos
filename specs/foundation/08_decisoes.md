@@ -76,7 +76,7 @@ Tokens em `specs/design-system/tokens/` (JSON). Repositório é a origem — Fig
 
 ### Integração com Figma
 
-DS integrado no fluxo de PRDs a partir de agora. Workflow definido em `07_design_ui.md`: PRD → research (UI Delta) → create_plan (inventário de componentes) → implement_plan (dados → DS → telas → validação → Code Connect).
+DS integrado no fluxo de PRDs a partir de agora. Workflow definido em `07_design_ui.md`: PRD → research (Design Reference Analysis) → create_plan (inventário de componentes) → implement_plan (dados → DS → telas → validação → Code Connect).
 
 ---
 

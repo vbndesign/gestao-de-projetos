@@ -53,6 +53,17 @@ Then wait for the user's research query.
    - Create a research plan using TodoWrite to track all subtasks
    - Consider which directories, files, or architectural patterns are relevant
 
+2.5. **If the feature has relevant UI (PRD has a "Design Reference" section):**
+   Before spawning sub-tasks, conduct a Design Reference Analysis:
+   - Read the current state of the affected components (markup, classes, existing files)
+   - Identify reusable components that already cover part of the expected design
+   - Record the Figma node IDs listed in the PRD that create_plan will need to consult via MCP
+
+   Add a `## Design Reference Analysis` section to the generated research document:
+   - **Current State**: existing components, markup, classes in use
+   - **Reusable Components**: which ones already exist and can be reused
+   - **Figma Nodes to Consult**: node IDs that create_plan needs to query via MCP before planning the frontend
+
 3. **Spawn parallel sub-agent tasks for comprehensive research:**
    - Create multiple Task agents to research different aspects concurrently
 
