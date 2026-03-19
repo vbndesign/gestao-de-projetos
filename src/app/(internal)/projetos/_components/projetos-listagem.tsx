@@ -69,7 +69,7 @@ export function ProjetosListagem({
               value={statusAtual}
               onValueChange={(v) => handleFiltro('status', v ?? '')}
             >
-              <SelectTrigger className="h-14 rounded-[4px] border-[var(--ds-color-component-button-outline-brand-default-border)] text-[var(--ds-color-component-button-outline-brand-default-text)] hover:bg-[var(--ds-color-component-button-outline-brand-hover-bg)]">
+              <SelectTrigger className="h-14 data-[size=default]:h-14 gap-4 rounded-[4px] border-[var(--ds-color-component-button-outline-brand-default-border)] p-4 text-base text-[var(--ds-color-component-button-outline-brand-default-text)] hover:bg-[var(--ds-color-component-button-outline-brand-hover-bg)] [&_svg]:size-6 [&_svg]:text-[var(--ds-color-component-button-outline-brand-default-text)]">
                 <SelectValue placeholder="Selecionar status" />
               </SelectTrigger>
               <SelectContent>
@@ -86,7 +86,7 @@ export function ProjetosListagem({
               value={clienteAtual}
               onValueChange={(v) => handleFiltro('cliente', v ?? '')}
             >
-              <SelectTrigger className="h-14 rounded-[4px] border-[var(--ds-color-component-button-outline-brand-default-border)] text-[var(--ds-color-component-button-outline-brand-default-text)] hover:bg-[var(--ds-color-component-button-outline-brand-hover-bg)]">
+              <SelectTrigger className="h-14 data-[size=default]:h-14 gap-4 rounded-[4px] border-[var(--ds-color-component-button-outline-brand-default-border)] p-4 text-base text-[var(--ds-color-component-button-outline-brand-default-text)] hover:bg-[var(--ds-color-component-button-outline-brand-hover-bg)] [&_svg]:size-6 [&_svg]:text-[var(--ds-color-component-button-outline-brand-default-text)]">
                 <SelectValue placeholder="Selecionar cliente" />
               </SelectTrigger>
               <SelectContent>
@@ -120,41 +120,41 @@ export function ProjetosListagem({
           Nenhum projeto encontrado.
         </p>
       ) : (
-        <div className="flex flex-col gap-4 rounded-[6px] bg-white p-6">
-          {/* ListHeader */}
-          <div
-            className="flex shrink-0 items-center gap-16 rounded-[6px] px-6 py-4 text-[length:var(--ds-typography-size-sm)] font-semibold leading-[var(--ds-typography-line-height-sm)]"
-            style={{
-              backgroundColor: 'var(--ds-color-component-data-row-header-bg)',
-              color: 'var(--ds-color-component-data-row-header-text)',
-            }}
-          >
-            <span className="w-[420px] shrink-0">Projetos</span>
-            <span className="w-20 shrink-0">Tarefas</span>
-            <span className="w-20 shrink-0">Horas</span>
-            <span className="w-[140px] shrink-0">Orçamento</span>
-            <span className="w-[140px] shrink-0">Data de início</span>
-            <span className="w-48 shrink-0">Previsão de término</span>
-          </div>
+        <div className="overflow-x-auto rounded-[6px] bg-white p-ds-24">
+          <div className="flex flex-col gap-ds-16">
+            {/* ListHeader */}
+            <div
+              className="flex shrink-0 items-center gap-ds-64 rounded-[6px] px-ds-24 py-ds-16 text-[length:var(--ds-typography-size-sm)] font-semibold leading-[var(--ds-typography-line-height-sm)]"
+              style={{
+                backgroundColor: 'var(--ds-color-component-data-row-header-bg)',
+                color: 'var(--ds-color-component-data-row-header-text)',
+              }}
+            >
+              <span className="min-w-[380px] flex-1">Projetos</span>
+              <span className="w-20 shrink-0">Tarefas</span>
+              <span className="w-[140px] shrink-0">Data de início</span>
+              <span className="w-48 shrink-0">Previsão de término</span>
+            </div>
 
-          {/* Rows */}
-          {projetos.map((projeto) => {
-            const totalTarefas = projeto.fases.reduce(
-              (sum, f) => sum + f._count.tarefas,
-              0,
-            )
-            return (
-              <DataRowProjects
-                key={projeto.id}
-                id={projeto.id}
-                nome={projeto.nome}
-                clienteNome={projeto.cliente.nome}
-                totalTarefas={totalTarefas}
-                dataInicio={projeto.data_inicio}
-                previsaoEntrega={projeto.previsao_entrega}
-              />
-            )
-          })}
+            {/* Rows */}
+            {projetos.map((projeto) => {
+              const totalTarefas = projeto.fases.reduce(
+                (sum, f) => sum + f._count.tarefas,
+                0,
+              )
+              return (
+                <DataRowProjects
+                  key={projeto.id}
+                  id={projeto.id}
+                  nome={projeto.nome}
+                  clienteNome={projeto.cliente.nome}
+                  totalTarefas={totalTarefas}
+                  dataInicio={projeto.data_inicio}
+                  previsaoEntrega={projeto.previsao_entrega}
+                />
+              )
+            })}
+          </div>
         </div>
       )}
     </div>
