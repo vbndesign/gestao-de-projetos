@@ -19,6 +19,22 @@ const badgeVariants = cva(
         ghost:
           "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
         link: "text-primary underline-offset-4 hover:underline",
+
+        /* ── Design System color variants ── */
+        purple:
+          "bg-[var(--ds-color-component-badge-purple-bg)] text-[var(--ds-color-component-badge-purple-text)]",
+        indigo:
+          "bg-[var(--ds-color-component-badge-indigo-bg)] text-[var(--ds-color-component-badge-indigo-text)]",
+        yellow:
+          "bg-[var(--ds-color-component-badge-yellow-bg)] text-[var(--ds-color-component-badge-yellow-text)]",
+        pink:
+          "bg-[var(--ds-color-component-badge-pink-bg)] text-[var(--ds-color-component-badge-pink-text)]",
+        green:
+          "bg-[var(--ds-color-component-badge-green-bg)] text-[var(--ds-color-component-badge-green-text)]",
+        sky:
+          "bg-[var(--ds-color-component-badge-sky-bg)] text-[var(--ds-color-component-badge-sky-text)]",
+        red:
+          "bg-[var(--ds-color-component-badge-red-bg)] text-[var(--ds-color-component-badge-red-text)]",
       },
     },
     defaultVariants: {

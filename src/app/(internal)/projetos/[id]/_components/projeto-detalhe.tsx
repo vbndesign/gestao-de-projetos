@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
+import { ProjectSummaryCard } from '@/components/project-summary-card'
 import {
   Dialog,
   DialogContent,
@@ -262,57 +263,54 @@ export function ProjetoDetalhe({
       </div>
 
       {/* Info Grid */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">Cliente</p>
-          <p>
-            <Link
-              href={`/clientes/${projeto.cliente.id}`}
-              className="text-primary hover:underline"
-            >
-              {projeto.cliente.nome}
-            </Link>
-          </p>
-        </div>
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">Status</p>
-          <p>
-            <Badge variant="secondary">
-              {STATUS_LABELS[projeto.status] ?? projeto.status}
-            </Badge>
-          </p>
-        </div>
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">Data de início</p>
-          <p>{new Date(projeto.data_inicio).toLocaleDateString('pt-BR')}</p>
-        </div>
-        {projeto.previsao_entrega && (
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">Previsão de entrega</p>
-            <p>{new Date(projeto.previsao_entrega).toLocaleDateString('pt-BR')}</p>
-          </div>
-        )}
-        {projeto.data_conclusao_real && (
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">Data de conclusão real</p>
-            <p>{new Date(projeto.data_conclusao_real).toLocaleDateString('pt-BR')}</p>
-          </div>
-        )}
-        {projeto.descricao && (
-          <div className="sm:col-span-2">
-            <p className="text-sm font-medium text-muted-foreground">Descrição</p>
-            <p className="whitespace-pre-wrap">{projeto.descricao}</p>
-          </div>
-        )}
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">Criado em</p>
-          <p>{new Date(projeto.created_at).toLocaleDateString('pt-BR')}</p>
-        </div>
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">Atualizado em</p>
-          <p>{new Date(projeto.updated_at).toLocaleDateString('pt-BR')}</p>
-        </div>
-      </div>
+      <ProjectSummaryCard
+        fields={[
+          {
+            label: 'Cliente',
+            value: projeto.cliente.nome,
+            href: `/clientes/${projeto.cliente.id}`,
+          },
+          {
+            label: 'Status',
+            value: (
+              <Badge variant="purple">
+                {STATUS_LABELS[projeto.status] ?? projeto.status}
+              </Badge>
+            ),
+          },
+          {
+            label: 'Data de início',
+            value: new Date(projeto.data_inicio).toLocaleDateString('pt-BR'),
+          },
+          ...(projeto.previsao_entrega
+            ? [{
+                label: 'Previsão de entrega',
+                value: new Date(projeto.previsao_entrega).toLocaleDateString('pt-BR'),
+              }]
+            : []),
+          ...(projeto.data_conclusao_real
+            ? [{
+                label: 'Data de conclusão real',
+                value: new Date(projeto.data_conclusao_real).toLocaleDateString('pt-BR'),
+              }]
+            : []),
+          ...(projeto.descricao
+            ? [{
+                label: 'Descrição',
+                value: <span className="whitespace-pre-wrap">{projeto.descricao}</span>,
+                colSpan: 2 as const,
+              }]
+            : []),
+          {
+            label: 'Criado em',
+            value: new Date(projeto.created_at).toLocaleDateString('pt-BR'),
+          },
+          {
+            label: 'Atualizado em',
+            value: new Date(projeto.updated_at).toLocaleDateString('pt-BR'),
+          },
+        ]}
+      />
 
       {/* Fases */}
       <div className="space-y-4">

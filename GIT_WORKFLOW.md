@@ -1,6 +1,6 @@
 # Git Workflow — Gestão de Projetos
 
-Guia de branches e fluxo de desenvolvimento do repositório.
+Guia simplificado de branches, commits e versionamento.
 
 ---
 
@@ -9,168 +9,319 @@ Guia de branches e fluxo de desenvolvimento do repositório.
 ```
 main (produção)
   └── dev (integration)
-       ├── modulo/clientes
-       ├── modulo/projetos
-       └── modulo/registros-operacionais
+       ├── feature/prd-NN-descricao
+       ├── feature/ds-descricao
+       ├── fix/escopo-descricao
+       └── hotfix/descricao
 ```
 
-| Branch | Descrição |
-|---|---|
-| `main` | Produção. Somente merges de `dev` após aprovação. |
-| `dev` | Integration. Agrupa múltiplos módulos prontos para release. |
-| `modulo/{nome}` | Branch estável de um módulo. Criada apenas quando há **múltiplos PRDs** para aquela parte do sistema (ex: PRD-04a + PRD-04b). |
-| `feature/{nome}-prdNN{letra}` | Branch de trabalho. Criada a partir de `modulo/{nome}` ou diretamente de `dev` (em caso de PRD único). |
+| Branch | Propósito | Duração |
+|---|---|---|
+| `main` | Produção — stable releases | permanente |
+| `dev` | Integration — staging pronto para release | permanente |
+| `feature/*` | Desenvolvimento de PRD ou DS fundacional | curta (dias, não semanas) |
+| `fix/*` | Correção rápida ou tweak de DS | curta |
+| `hotfix/*` | Correção crítica em produção | muito curta |
 
-### Regra: Quando criar `modulo/{nome}`
+---
 
-- ✅ **Crie** `modulo/{nome}` quando há **2+ PRDs** para a mesma funcionalidade (ex: PRD-04a Backend + PRD-04b UI)
-- ❌ **Não crie** `modulo/{nome}` quando há apenas **1 PRD** para aquela parte — trabalhe direto em `feature/*` a partir de `dev`
+## Nomenclatura de Branches
 
-### Nomenclatura de branches
+### Feature branches — PRDs de produto
 
-- **Feature branch com múltiplos PRDs:** `feature/{nome}-prd{NN}{letra}`
-  Exemplo: `feature/registros-operacionais-prd04a`
+```
+feature/prd-NN-descricao        # PRD único (ex: prd-05-pendencias)
+feature/prd-NNa-descricao       # PRD com letra (ex: prd-04a-registros-backend)
+```
 
-- **Feature branch com PRD único:** `feature/{nome}-prd{NN}`
-  Exemplo: `feature/pendencias-prd05`
+**Exemplos:**
+- `feature/prd-05-pendencias`
+- `feature/prd-06-horas-estimadas`
+- `feature/prd-04a-registros-backend`
+- `feature/prd-04b-registros-ui`
+
+### Feature branches — Design System
+
+```
+feature/ds-descricao-tema      # DS fundacional ou tweak estrutural
+```
+
+**Exemplos:**
+- `feature/ds-spacing-tokens`
+- `feature/ds-dark-mode` (futuro)
+
+Componentes criados **como parte de uma PRD de produto** não têm branch DS — ficam dentro da branch `feature/prd-*` do PRD.
+
+### Fix branches
+
+```
+fix/escopo-descricao          # Correção ou tweak rápido
+fix/ds-descricao              # Tweak de DS (ex: hover state, cor)
+```
+
+**Exemplos:**
+- `fix/button-variant-hover`
+- `fix/ds-button-outline-hover`
+- `fix/projeto-form-validation`
+
+### Hotfix branches
+
+```
+hotfix/descricao              # Apenas para produção (bug crítico)
+```
 
 ---
 
 ## Fluxo de Desenvolvimento
 
-### Iniciar PRD em um módulo
+### 1. Iniciar trabalho em um PRD
 
 ```bash
-# Para PRD-03 do módulo clientes
-git checkout -b feature/clientes-prd03 modulo/clientes
-
-# Trabalha, commita
-git commit -m "feat(clientes): ..."
-
-# Push
-git push -u origin feature/clientes-prd03
+git checkout dev
+git pull origin dev
+git checkout -b feature/prd-05-pendencias
+# ... trabalha, commita com Conventional Commits ...
+git push -u origin feature/prd-05-pendencias
 ```
 
-### Completar PRD (merge no módulo)
+### 2. Abrir PR para review
 
-1. **GitHub:** Abre PR `feature/clientes-prd03` → `modulo/clientes`
-2. **Review e aprovação**
-3. **Merge com `--no-ff`** em `modulo/clientes` (cria commit de merge, mantém árvore visível)
-   ```bash
-   git checkout modulo/clientes
-   git merge --no-ff feature/clientes-prd03
-   git tag -a vX.Y.0 -m "PRD-03: descrição"
-   ```
-4. **Local:** Sync
-   ```bash
-   git checkout modulo/clientes
-   git pull origin modulo/clientes
-   ```
+GitHub: `feature/prd-05-pendencias` → `dev`
 
----
+Review e aprovação.
 
-## Fluxo de Integração (módulo → dev)
+### 3. Merge em dev
 
-Quando o módulo está pronto (todas as PRDs completadas):
+```bash
+# Local
+git checkout dev
+git pull origin dev
+git merge --no-ff feature/prd-05-pendencias
+git push origin dev
 
-1. **GitHub:** Abre PR `modulo/clientes` → `dev`
-2. **Review e aprovação**
-3. **Merge com `--no-ff`** em `dev`
-   ```bash
-   git checkout dev
-   git merge --no-ff modulo/clientes
-   ```
-4. **Local:** Sync
-   ```bash
-   git checkout dev
-   git pull origin dev
-   ```
+# Deletar branch
+git branch -d feature/prd-05-pendencias
+git push origin --delete feature/prd-05-pendencias
+```
+
+### 4. Tags de marco (após múltiplos PRDs relacionados)
+
+Quando **um módulo funcional completo** está pronto:
+
+```bash
+git checkout dev
+git tag -a v0.5.0 -m "Módulo Pendências completo (PRD-05 + complementares)"
+git push origin v0.5.0
+```
 
 ---
 
-## Fluxo de Release (dev → main)
+## Design System — 3 Tiers
 
-Quando `dev` está estável com múltiplos módulos:
+### Tier 1: Fundacional (tokens, primitives base)
 
-1. **GitHub:** Abre PR `dev` → `main`
-2. **Review final e aprovação**
-3. **Merge com `--no-ff`** em `main`
-   ```bash
-   git checkout main
-   git merge --no-ff dev
-   ```
-4. **Local:** Sync
-   ```bash
-   git checkout main
-   git pull origin main
-   ```
+Trabalho sem PRD de produto. Exemplo: implementar spacing tokens.
+
+```bash
+git checkout -b feature/ds-spacing-tokens dev
+# ... edita colors.json, typography.json, spacing.json ...
+# ... roda script generate-css-tokens.mjs ...
+# ... commita ...
+git push -u origin feature/ds-spacing-tokens
+# PR → dev → merge --no-ff
+```
+
+**Documentação:** atualizar `specs/design-system/foundations/design-system-frontend-implementation.md` após merge.
+
+### Tier 2: Feature-driven (componentes criados para um PRD)
+
+Trabalho dentro da branch `feature/prd-NN-*` do PRD.
+
+Exemplo: PRD-05 de Pendências precisa de um componente `PendenciaTimeline`.
+
+```
+feature/prd-05-pendencias
+  ├── src/components/pendencia-timeline.tsx (novo)
+  ├── src/app/(internal)/pendencias/_components/pendencia-form.tsx (novo)
+  └── ... implementação do PRD incluindo DS ...
+```
+
+**Documentação:** PRD doc inclui seção "Design Reference" listando componentes criados.
+
+### Tier 3: Tweak/fix (ajustes rápidos)
+
+Ad-hoc em tempo de execução. Exemplo: cor de hover errada.
+
+```bash
+git checkout -b fix/ds-button-outline-hover dev
+# ... ajusta a cor em globals.css ou badge.tsx ...
+git push -u origin fix/ds-button-outline-hover
+# PR → dev → merge --no-ff (ou direct push se trivial)
+```
+
+**Commit:** `fix(design-system): ajustar hover state do button outline`. Sem PRD.
+
+---
+
+## Conventional Commits
+
+Formato obrigatório:
+
+```
+tipo(escopo): descrição breve no imperativo
+```
+
+| Tipo | Quando usar |
+|---|---|
+| `feat` | Nova funcionalidade |
+| `fix` | Correção de bug |
+| `refactor` | Refatoração sem mudança de comportamento |
+| `chore` | Config, deps, build |
+| `docs` | Documentação |
+| `test` | Testes |
+| `perf` | Performance |
+| `style` | Formatação, lint |
+
+**Escopos:** `cliente` · `projeto` · `fase` · `tarefa` · `pendencia` · `horas` · `registros` · `timeline` · `portal` · `auth` · `db` · `ui` · `design-system` · `config`
+
+**Exemplos:**
+```
+feat(pendencia): criar modelo e queries de pendências
+feat(pendencia): implementar form de criação com validação
+fix(fase): impedir exclusão de fase marcada como geral
+refactor(queries): separar queries de portal e interno
+fix(design-system): ajustar hover state do button outline
+chore(deps): atualizar tailwindcss para v4.1
+docs(readme): adicionar instruções de setup
+```
+
+---
+
+## Estratégia de Merge
+
+- `feature/*` → `dev` — **`git merge --no-ff`** (cria commit de merge, mantém histórico visível)
+- `dev` → `main` — **`git merge --no-ff`** (apenas para releases estáveis)
+- `hotfix/*` → `main` + `dev` — cherry-pick ou rebase-merge
+
+**Por que `--no-ff`?** Preserva a árvore de commits. Cada PRD fica como ramificação isolada e rastreável no histórico.
+
+---
+
+## Versionamento Semver
+
+Tags marcam **conclusão de um módulo funcional completo**, não de cada sub-PRD.
+
+| Tag | Significado |
+|---|---|
+| `v0.0.0-specs` | Specs finalizadas, zero código ✅ |
+| `v0.1.0` | Setup completo (PRD-00a + 00b) |
+| `v0.2.0` | Módulo Clientes (PRD-01) |
+| `v0.3.0` | Módulo Projetos (PRD-02a + 02b + 02c + PRD-03) |
+| `v0.4.0` | Módulo Registros (PRD-04a + 04b) |
+| `v0.5.0` | Módulo Pendências (PRD-05 + complementares) |
+| … | continua por módulo |
+| `v1.0.0` | MVP completo |
+
+```bash
+# Após módulo concluído e testado
+git tag -a v0.5.0 -m "Módulo Pendências completo"
+git push origin v0.5.0
+```
+
+Em produção, Vercel detecta tags e faz deploy.
+
+---
+
+## Proteção de Branches (GitHub)
+
+| Branch | Regras |
+|---|---|
+| `main` | ✅ Require PR before merge · ✅ Require 1 approval · ✅ Dismiss stale reviews · ❌ Force push |
+| `dev` | ✅ Require PR before merge · ✅ Require 1 approval · ❌ Force push |
 
 ---
 
 ## Casos de Uso
 
-### Case 1: PRD **única** para uma funcionalidade
+### Case 1: PRD única para uma funcionalidade
+
+Exemplo: PRD-05 Pendências (nenhuma 05b, 05c, etc.)
+
 ```bash
-# PRD-05a é Pendência (único PRD para pendências — não há 05b, 05c, etc.)
-git checkout -b feature/pendencias-prd05 dev
-
-# Trabalha, commita
-git commit -m "feat(pendencias): ..."
-
-# Push
-git push -u origin feature/pendencias-prd05
-
-# PR: feature/pendencias-prd05 → dev (direto em dev, sem modulo/*)
-# Merge em dev
+git checkout -b feature/prd-05-pendencias dev
+# ... trabalha (dados, UI, DS) ...
+git push -u origin feature/prd-05-pendencias
+# PR → dev → merge --no-ff → tag v0.5.0 quando pronto
 ```
 
-### Case 2: Múltiplos PRDs para a mesma funcionalidade
-```bash
-# PRD-04a + PRD-04b são Registros Operacionais
-# Passo 1: criar modulo/registros-operacionais
-git checkout -b modulo/registros-operacionais dev
-git push -u origin modulo/registros-operacionais
+### Case 2: PRD com múltiplas sub-PRDs
 
-# Passo 2: trabalhar em PRD-04a
-git checkout -b feature/registros-operacionais-prd04a modulo/registros-operacionais
+Exemplo: PRD-04a (backend) + PRD-04b (UI)
+
+```bash
+# PRD-04a
+git checkout -b feature/prd-04a-registros-backend dev
 # ... trabalha ...
-# PR: feature/registros-operacionais-prd04a → modulo/registros-operacionais
-# Merge em modulo/registros-operacionais
+# PR → dev → merge --no-ff
 
-# Passo 3: trabalhar em PRD-04b (mesma branch modulo/registros-operacionais)
-git checkout -b feature/registros-operacionais-prd04b modulo/registros-operacionais
-# ... trabalha ...
-# PR: feature/registros-operacionais-prd04b → modulo/registros-operacionais
-# Merge em modulo/registros-operacionais
+# PRD-04b (novo trabalho, nova branch)
+git checkout -b feature/prd-04b-registros-ui dev
+# ... trabalha (pode referencia componentes de 04a) ...
+# PR → dev → merge --no-ff
 
-# Passo 4: quando ambos prontos, integrar no dev
-# PR: modulo/registros-operacionais → dev
-# Merge em dev
+# Quando ambos prontos
+git tag -a v0.4.0 -m "Módulo Registros completo"
 ```
 
-### Case 3: Duas PRDs em módulos diferentes (paralelo)
+### Case 3: DS fundacional
+
+Exemplo: implementar spacing tokens
+
 ```bash
-# Terminal 1: PRD de clientes
-git checkout -b feature/clientes-prd04 modulo/clientes
-
-# Terminal 2: PRD de projetos
-git checkout -b feature/projetos-prd03 modulo/projetos
-
-# Depois: 2 PRs simultâneas
-# PR 1: feature/clientes-prd04 → modulo/clientes
-# PR 2: feature/projetos-prd03 → modulo/projetos
+git checkout -b feature/ds-spacing-tokens dev
+# ... edita tokens/spacing.json, roda script, testa ...
+git push -u origin feature/ds-spacing-tokens
+# PR → dev → merge --no-ff
+# Atualiza docs/design-system/foundations/design-system-frontend-implementation.md
 ```
 
-### Case 4: Mudança que afeta 2 módulos (refactor, integração)
+### Case 4: Tweak de DS em tempo de execução
+
+Exemplo: hover state errado no button
+
 ```bash
-# Branch sai de dev (não de um módulo específico)
-git checkout -b feature/refactor-auth dev
+git checkout -b fix/ds-button-outline-hover dev
+# ... ajusta CSS ...
+git push -u origin fix/ds-button-outline-hover
+# PR → dev (ou direct push se 1 commit trivial)
+# Merge --no-ff
+```
 
-# Trabalha em clientes/ E projetos/
-git push -u origin feature/refactor-auth
+### Case 5: Dois PRDs em desenvolvimento paralelo
 
-# PR: feature/refactor-auth → dev (uma PR única)
-# Merge em dev
+```bash
+# Terminal 1
+git checkout -b feature/prd-05-pendencias dev
+
+# Terminal 2 (novo shell)
+git checkout -b feature/prd-06-horas dev
+
+# Ambos mergeados em dev quando prontos (sem conflito esperado, escopos diferentes)
+```
+
+### Case 6: Mudança que afeta múltiplos PRDs (refactor)
+
+Exemplo: refatorar queries de portal
+
+```bash
+git checkout -b feature/refactor-portal-queries dev
+# ... muda queries/projeto.queries.ts e queries/fase.queries.ts ...
+# ... atualiza pages que usam essas queries ...
+git push -u origin feature/refactor-portal-queries
+# PR → dev → merge --no-ff
+
+# Notar: refactores são `feature/*`, não `refactor/*`
+# (refactor/* é tipo de commit, não tipo de branch)
 ```
 
 ---
@@ -178,93 +329,74 @@ git push -u origin feature/refactor-auth
 ## Comandos Frequentes
 
 ```bash
-# Ver estado de branches
+# Listar branches locais
 git branch -v
-git branch -vv  # com remote tracking
-
-# Atualizar branch local com remoto
-git pull origin modulo/clientes
 
 # Listar branches remotas
 git branch -r
 
-# Deletar branch local
-git branch -d feature/clientes-prd03
+# Atualizar local com remoto
+git pull origin dev
+
+# Deletar branch local após merge
+git branch -d feature/prd-05-pendencias
 
 # Deletar branch remota
-git push origin --delete feature/clientes-prd03
+git push origin --delete feature/prd-05-pendencias
 
-# Resetar para último commit remoto
-git reset --hard origin/modulo/clientes
+# Ver commits da branch
+git log feature/prd-05-pendencias --oneline -10
 
-# Ver commits de uma branch
-git log modulo/clientes --oneline -10
+# Resetar para remoto (se messed up local)
+git reset --hard origin/dev
+
+# Ver qual branch rastreia qual remoto
+git branch -vv
+
+# Cherry-pick commit de outra branch
+git cherry-pick abc1234
+
+# Criar tag anotada
+git tag -a v0.5.0 -m "Módulo Pendências"
+
+# Listar tags
+git tag -l
+
+# Deletar tag local
+git tag -d v0.5.0
+
+# Deletar tag remota
+git push origin --delete v0.5.0
 ```
 
 ---
 
-## Design System (Exceção)
+## Checklist Antes de Começar uma PR
 
-`modulo/design-system` **não segue numeração de PRDs**. Evolui em paralelo como módulo transversal:
-
-```
-modulo/design-system (base)
-├── feature/typography
-├── feature/spacing
-├── feature/colors
-└── ...
-```
-
-- Work branches: `feature/{tema}` derivadas de `modulo/design-system`
-- PR: `feature/{tema}` → `modulo/design-system` (review + merge --no-ff)
-- Quando temas prontos: PR `modulo/design-system` → `dev` (review + merge --no-ff)
+- [ ] Branch criada a partir de `dev` atualizado (`git pull origin dev`)
+- [ ] Commits com tipos e escopos corretos (Conventional Commits)
+- [ ] Nenhum commit `merge` local (rebase ao invés de merge --no-ff local)
+- [ ] Branch foi feita push com `-u` (tracked)
+- [ ] PR descrita com contexto e checklist de testes
+- [ ] Nenhuma mudança em `main`
 
 ---
 
 ## Regras Críticas
 
 ❌ **NUNCA:**
-- Committar direto em `main`, `dev`, `modulo/*`
-- Fazer `git push --force` em branches compartilhadas
-- Mergear `main` ← `dev` sem análise
-- Criar `modulo/{nome}` quando há apenas **1 PRD** para aquela funcionalidade
+- Committar ou fazer push direto em `main` ou `dev`
+- `git push --force` em branches compartilhadas
+- Mergear `main` ← `dev` sem que `dev` esteja estável
+- Deixar feature branches abertas por mais de 2 semanas sem comunicação
 
 ✅ **SEMPRE:**
-- Criar `modulo/{nome}` quando há **2+ PRDs** para a mesma funcionalidade
-- Feature branches com múltiplos PRDs: derivar de `modulo/*`, não de `dev`
-- Feature branches com PRD único: derivar direto de `dev`, sem `modulo/*`
-- Faz PR para revisar antes de merge
-- Puxa `git pull` antes de começar novo trabalho
-- Commits com mensagens descritivas (type: descrição)
+- Feature branches nomeadas descritivamente
+- Commits com tipo e escopo (Conventional Commits)
+- PR antes de merge em `dev`
+- `git pull` antes de começar novo trabalho
+- Deletar branches locais e remotas após merge
 
 ---
 
-## Fluxo Resumido
-
-### Para PRD com múltiplos sub-PRDs (ex: PRD-04a + PRD-04b)
-```
-1. git checkout -b modulo/{nome} dev
-2. git push -u origin modulo/{nome}
-3. git checkout -b feature/{nome}-prd{NN}a modulo/{nome}
-4. (trabalha, commita)
-5. git push -u origin feature/{nome}-prd{NN}a
-6. Abre PR: feature/... → modulo/{nome} (review + merge --no-ff)
-7. Repete passos 3-6 para cada sub-PRD (prd04b, etc.)
-8. Quando todos PRDs prontos: PR modulo/{nome} → dev (review + merge --no-ff)
-9. Quando dev estável: PR dev → main (review + merge --no-ff)
-```
-
-### Para PRD único (ex: PRD-05 Pendências)
-```
-1. git checkout -b feature/{nome}-prdNN dev
-2. (trabalha, commita)
-3. git push -u origin feature/{nome}-prdNN
-4. Abre PR: feature/... → dev (review + merge --no-ff)
-5. Quando dev estável: PR dev → main (review + merge --no-ff)
-```
-
-**Nota sobre merge strategy:** Usar `--no-ff` em **todos os merges** mantém a árvore de commits visível. Cada PRD fica como ramificação isolada e rastreável.
-
----
-
-**Última atualização:** 2026-03-14 — Adicionada exceção Design System sem PRD numerado
+**Última atualização:** 2026-03-19 — Simplificado: removido `modulo/*`, integrado DS em 3 tiers

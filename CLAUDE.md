@@ -159,10 +159,13 @@ export default function MyComponent() {
 
 ### Documentação base
 
-Antes de alterar tokens, naming ou integrações com Figma, ler:
-- `specs/design-system/foundations/design-system-colors.md`
-- `specs/design-system/foundations/design-system-typography.md`
-- `specs/design-system/foundations/design-system-figma-naming.md`
+| Doc | Quando ler |
+|---|---|
+| `specs/foundation/07_design_ui.md` | Antes de qualquer feature com UI — define quando e como usar Figma MCP, workflow por tipo de feature, decisão de componente |
+| `specs/design-system/foundations/design-system-frontend-implementation.md` | Contratos de componentes existentes (Level 1-3), token architecture, decisões de design |
+| `specs/design-system/foundations/design-system-colors.md` | Antes de alterar tokens de cor |
+| `specs/design-system/foundations/design-system-typography.md` | Antes de alterar tokens de tipografia |
+| `specs/design-system/foundations/design-system-figma-naming.md` | Antes de criar/renomear componentes com raiz no Figma |
 
 ### Source of truth
 
@@ -192,14 +195,14 @@ Scripts de Figma disponíveis em `package.json`:
 
 ```
 --ds-color-primitive-brand-500
---ds-color-global-text-heading
+--ds-color-semantic-text-heading
 --ds-color-component-button-filled-brand-default-bg
 --ds-typography-size-base
 --ds-typography-weight-semibold
 ```
 
 Utilities Tailwind expostos via `@theme` em `globals.css`:
-- `text-ds-muted`, `bg-ds-brand-500`, `border-ds-subtle` etc.
+- `text-ds-muted`, `text-ds-heading`, `bg-ds-brand-500`, `border-ds-subtle` etc.
 
 ### Regras de uso em componentes novos
 
@@ -211,12 +214,34 @@ Utilities Tailwind expostos via `@theme` em `globals.css`:
 | Espaçamento arbitrário (`gap-3`) | Escala: 4, 8, 12, 16, 24, 32, 40, 48, 56, 64, 72, 80, 96, 120 |
 | Tamanho tipográfico arbitrário | Tokens: `text-ds-sm`, `text-ds-base`, `text-ds-lg` etc. |
 
-### Localização de componentes semânticos
+### Localização de componentes
 
-| Tipo | Localização |
-|---|---|
-| Reutilizáveis (`PageHeader`, `PageTabs`) | `src/components/` |
-| Específicos de feature (`DataRowProjects`, `ProjectSummaryCard`) | `src/app/(internal)/[feature]/_components/` |
+| Level | Localização | Tipo |
+|---|---|---|
+| 1 | `src/components/ui/` | Primitives shadcn com variantes DS (Button, Badge, Input…) |
+| 2 | `src/components/` | Semânticos reutilizáveis em 2+ features (PageHeader, PageTabs, DataRow, ProjectSummaryCard) |
+| 3 | `src/app/(internal)/[feature]/_components/` | Específicos de feature (DataRowProjects, form modals) |
+
+### Workflow com Figma (features com UI)
+
+Para qualquer feature nova com UI relevante, seguir o fluxo definido em `07_design_ui.md`:
+
+```
+PRD  →  seção "Design Reference" (nodes Figma identificados)
+  ↓
+research  →  seção "UI Delta" (estado atual vs. esperado)
+  ↓
+create_plan  →  inventário de componentes (criar / reutilizar / estender)
+  ↓
+implement_plan
+  Phase A: dados (queries, actions, services)
+  Phase B: componentes semânticos (via Figma MCP — node por node)
+  Phase C: composição de telas
+  Phase D: validação visual contra Figma
+  Phase E: Code Connect (após estabilizar)
+```
+
+**Features sem UI relevante** seguem o fluxo atual sem seções de design.
 
 ### Dark mode
 
@@ -225,8 +250,8 @@ Fora de escopo por enquanto. O `.dark` class do shadcn é mantido por compatibil
 ### Regras de manutenção
 
 - Ao evoluir tokens, atualizar JSON + documentação foundation correspondente
-- Se impactar Figma, atualizar o script/plugin que consome esses tokens
 - Não introduzir hex/OKLCH solto quando a intenção for criar regra de DS; formalizar o token no JSON primeiro
+- Code Connect só após componente estabilizar (2+ cycles de validação visual)
 
 ---
 
