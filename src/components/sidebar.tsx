@@ -10,7 +10,7 @@ import {
   LogOut,
   PieChart,
 } from 'lucide-react'
-import { createClient } from '@/lib/supabase-browser'
+import { createBrowserSupabaseClient } from '@/lib/supabase-browser'
 
 type MenuItemProps = {
   href: string
@@ -39,7 +39,7 @@ function LogoutButton() {
   const router = useRouter()
 
   async function handleLogout() {
-    const supabase = createClient()
+    const supabase = createBrowserSupabaseClient()
     await supabase.auth.signOut()
     router.push('/login')
   }
