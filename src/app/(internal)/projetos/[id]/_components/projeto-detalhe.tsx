@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { ProjectSummaryCard } from '../../_components/project-summary-card'
+import { ProjectSummaryCard } from '@/components/project-summary-card'
 import {
   Dialog,
   DialogContent,
