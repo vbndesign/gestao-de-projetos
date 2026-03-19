@@ -69,7 +69,7 @@ export function ProjetosListagem({
               value={statusAtual}
               onValueChange={(v) => handleFiltro('status', v ?? '')}
             >
-              <SelectTrigger className="h-14 rounded-[4px] border-[var(--ds-color-component-button-outline-brand-default-border)] text-[var(--ds-color-component-button-outline-brand-default-text)] hover:bg-[var(--ds-color-component-button-outline-brand-hover-bg)]">
+              <SelectTrigger className="h-14 data-[size=default]:h-14 gap-4 rounded-[4px] border-[var(--ds-color-component-button-outline-brand-default-border)] p-4 text-base text-[var(--ds-color-component-button-outline-brand-default-text)] hover:bg-[var(--ds-color-component-button-outline-brand-hover-bg)] [&_svg]:size-6 [&_svg]:text-[var(--ds-color-component-button-outline-brand-default-text)]">
                 <SelectValue placeholder="Selecionar status" />
               </SelectTrigger>
               <SelectContent>
@@ -86,7 +86,7 @@ export function ProjetosListagem({
               value={clienteAtual}
               onValueChange={(v) => handleFiltro('cliente', v ?? '')}
             >
-              <SelectTrigger className="h-14 rounded-[4px] border-[var(--ds-color-component-button-outline-brand-default-border)] text-[var(--ds-color-component-button-outline-brand-default-text)] hover:bg-[var(--ds-color-component-button-outline-brand-hover-bg)]">
+              <SelectTrigger className="h-14 data-[size=default]:h-14 gap-4 rounded-[4px] border-[var(--ds-color-component-button-outline-brand-default-border)] p-4 text-base text-[var(--ds-color-component-button-outline-brand-default-text)] hover:bg-[var(--ds-color-component-button-outline-brand-hover-bg)] [&_svg]:size-6 [&_svg]:text-[var(--ds-color-component-button-outline-brand-default-text)]">
                 <SelectValue placeholder="Selecionar cliente" />
               </SelectTrigger>
               <SelectContent>
