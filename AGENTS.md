@@ -1,4 +1,4 @@
-# AGENTS.md — Gestão de Projetos
+﻿# AGENTS.md — Gestão de Projetos
 
 Guia de referência para o Codex neste repositório. Leia antes de qualquer tarefa de implementação.
 
@@ -186,6 +186,9 @@ O repositório é a fonte da verdade. Figma consome esses tokens; não é a orig
 
 - Ao evoluir tokens, atualizar o JSON do domínio e a documentação foundation correspondente
 - Se a mudança impactar Figma, atualizar também o script/plugin que consome esses tokens
+- Para Codex, usar o MCP remoto oficial do Figma; não replicar `figma-console-mcp` nem bridge/plugin do tutorial do Claude
+- Usar links com `node-id` como entrada padrão no Codex; `get_design_context` é a ferramenta principal
+- Tratar Code Connect como etapa separada da conexão MCP
 - Não presumir aliases Tailwind/CSS que ainda não existem no código, como `text-ds-*` ou `bg-ds-*`
 - Evitar introduzir hex/OKLCH solto em componentes novos quando a intenção for criar regra de design system; primeiro formalizar o token no source of truth
 
