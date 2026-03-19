@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { ProjectSummary } from '@/components/project-summary'
+import { SummaryFields } from '@/components/project-summary'
 import {
   Dialog,
   DialogContent,
@@ -263,7 +263,7 @@ export function ProjetoDetalhe({
       </div>
 
       {/* Info Grid */}
-      <ProjectSummary
+      <SummaryFields
         fields={[
           {
             label: 'Cliente',
