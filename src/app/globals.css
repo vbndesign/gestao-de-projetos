@@ -39,13 +39,38 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-sm: var(--ds-radius-primitive-sm);
+  --radius-md: var(--ds-radius-primitive-md);
+  --radius-lg: var(--ds-radius-primitive-lg);
+  --radius-xl: var(--ds-radius-primitive-xl);
+  --radius-2xl: var(--ds-radius-primitive-xl);
+  --radius-3xl: var(--ds-radius-primitive-xl);
+  --radius-4xl: var(--ds-radius-primitive-full);
+
+  /* ── Design System: Radius ── */
+  --radius-ds-none: var(--ds-radius-primitive-none);
+  --radius-ds-xs: var(--ds-radius-primitive-xs);
+  --radius-ds-sm: var(--ds-radius-primitive-sm);
+  --radius-ds-md: var(--ds-radius-primitive-md);
+  --radius-ds-lg: var(--ds-radius-primitive-lg);
+  --radius-ds-xl: var(--ds-radius-primitive-xl);
+  --radius-ds-full: var(--ds-radius-primitive-full);
+
+  /* ── Design System: Spacing ── */
+  --spacing-ds-4: var(--ds-spacing-4);
+  --spacing-ds-8: var(--ds-spacing-8);
+  --spacing-ds-12: var(--ds-spacing-12);
+  --spacing-ds-16: var(--ds-spacing-16);
+  --spacing-ds-24: var(--ds-spacing-24);
+  --spacing-ds-32: var(--ds-spacing-32);
+  --spacing-ds-40: var(--ds-spacing-40);
+  --spacing-ds-48: var(--ds-spacing-48);
+  --spacing-ds-56: var(--ds-spacing-56);
+  --spacing-ds-64: var(--ds-spacing-64);
+  --spacing-ds-72: var(--ds-spacing-72);
+  --spacing-ds-80: var(--ds-spacing-80);
+  --spacing-ds-96: var(--ds-spacing-96);
+  --spacing-ds-120: var(--ds-spacing-120);
 
   /* ── Design System: Primitive — Brand scale ── */
   --color-ds-brand-50: var(--ds-color-primitive-brand-50);

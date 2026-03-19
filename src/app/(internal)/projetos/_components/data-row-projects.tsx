@@ -25,14 +25,14 @@ export function DataRowProjects({
     <Link
       href={`/projetos/${id}`}
       className={cn(
-        "group flex items-center gap-16 rounded-[6px] border p-6 transition-colors",
+        "group flex items-center gap-ds-64 rounded-[6px] border p-ds-24 transition-colors",
         "border-[var(--ds-color-component-data-row-default-border)] bg-[var(--ds-color-component-data-row-default-bg)]",
         "hover:border-[var(--ds-color-component-data-row-hover-border)] hover:bg-[var(--ds-color-component-data-row-hover-bg)]",
         className,
       )}
     >
-      {/* primaryInfo — 420px */}
-      <div className="flex w-[420px] shrink-0 items-center gap-4">
+      {/* primaryInfo */}
+      <div className="flex min-w-[380px] flex-1 items-center gap-ds-16">
         {/* IconTile inline */}
         <div className="shrink-0 rounded-[2px] bg-[var(--ds-color-component-icon-tile-purple-bg)] p-3">
           <BookOpen
@@ -60,16 +60,6 @@ export function DataRowProjects({
       {/* Tarefas — 80px */}
       <p className="w-20 shrink-0 text-[length:var(--ds-typography-size-base)] leading-[var(--ds-typography-line-height-base)] text-ds-muted">
         — / {totalTarefas}
-      </p>
-
-      {/* Horas — 80px */}
-      <p className="w-20 shrink-0 text-[length:var(--ds-typography-size-base)] leading-[var(--ds-typography-line-height-base)] text-ds-muted">
-        —
-      </p>
-
-      {/* Orçamento — 140px */}
-      <p className="w-[140px] shrink-0 text-[length:var(--ds-typography-size-base)] leading-[var(--ds-typography-line-height-base)] text-ds-muted">
-        —
       </p>
 
       {/* Data de início — 140px */}

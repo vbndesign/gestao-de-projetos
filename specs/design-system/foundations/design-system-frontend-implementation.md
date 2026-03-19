@@ -23,27 +23,30 @@ Este documento é a **referência de contratos** do Design System no frontend. R
 ### Arquitetura
 
 ```
-JSON (colors.json, typography.json)
+JSON (colors.json, typography.json, spacing.json, radius.json)
   ↓ node specs/design-system/scripts/generate-css-tokens.mjs
 CSS vars (src/app/design-system-tokens.css)  ← nunca editar manualmente
   ↓ importado em globals.css
-Tailwind @theme inline  →  utilities text-ds-*, bg-ds-*, border-ds-*
+Tailwind @theme inline  →  utilities text-ds-*, bg-ds-*, border-ds-*, radius-ds-*, spacing-ds-*
 ```
 
 ### Como adicionar tokens
 
-1. Editar `specs/design-system/tokens/colors.json` ou `typography.json`
+1. Editar o JSON correspondente em `specs/design-system/tokens/`
 2. Rodar `node specs/design-system/scripts/generate-css-tokens.mjs`
 3. Commitar JSON + CSS gerado
 
-### Inventário atual (259 CSS vars)
+### Inventário atual (305 CSS vars)
 
 | Categoria | Quantidade | Exemplos de prefixo |
 |---|---|---|
-| Primitives | 42 | `--ds-color-primitive-brand-*` |
-| Semantic | 82 | `--ds-color-semantic-bg-*`, `--ds-color-semantic-text-*`, `--ds-color-semantic-border-*` |
-| Component | 92 | `--ds-color-component-button-*`, `--ds-color-component-badge-*`, `--ds-color-component-data-row-*` |
+| Color Primitives | 42 | `--ds-color-primitive-brand-*` |
+| Color Semantic | 82 | `--ds-color-semantic-bg-*`, `--ds-color-semantic-text-*`, `--ds-color-semantic-border-*` |
+| Color Component | 92 | `--ds-color-component-button-*`, `--ds-color-component-badge-*`, `--ds-color-component-data-row-*` |
 | Typography | 43 | `--ds-typography-size-*`, `--ds-typography-weight-*`, `--ds-typography-line-height-*` |
+| Spacing | 14 | `--ds-spacing-4` … `--ds-spacing-120` |
+| Radius Primitive | 7 | `--ds-radius-primitive-none/xs/sm/md/lg/xl/full` |
+| Radius Semantic | 8 | `--ds-radius-semantic-button/card/badge/input/dialog/…` |
 
 ### Utilities Tailwind disponíveis
 
