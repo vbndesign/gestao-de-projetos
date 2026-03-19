@@ -1,420 +1,271 @@
-# PRD — Design System Frontend Implementation
+# Design System Frontend — Contratos e Decisões
 
 ## Overview
 
-Este PRD documenta a estratégia de implementação do frontend usando o Design System como camada unificadora. Consolida o trabalho realizado em Etapas 2-3 e define o roadmap para Etapas 4-6 (Figma MCP, Code Connect, Spacing Tokens).
+Este documento é a **referência de contratos** do Design System no frontend. Registra o que existe, como usar, e por que as decisões foram tomadas — para que PRDs e implementações futuras partam de uma base clara.
 
-**Objetivo**: Manter uma implementação visual coesa, escalável e alinhada entre Figma (source of context visual) e repositório (source of truth de tokens e contratos).
+**O que não está aqui:** workflow de integração com Figma (ver `07_design_ui.md`), arquitetura de tokens de cor (ver `design-system-colors.md`), tipografia (ver `design-system-typography.md`).
 
 ---
 
-## Status Atual
+## Princípios
 
-### Etapa 2 ✅ Completa: Camada de Adaptação de Tokens
+1. **Repositório como source of truth** — JSON tokens (`specs/design-system/tokens/`) são a origem oficial. Figma consome esses tokens, não os define.
+2. **Tokens antes de componentes** — formalizar token em JSON antes de usar em componentes. Evita hex solto e tamanhos arbitrários.
+3. **Granular com Figma MCP** — MCP é ferramenta de leitura (design context), usada componente por componente, nunca para gerar páginas inteiras.
+4. **Estender primitives, não reescrever** — `src/components/ui/` contém primitives shadcn. Modificar apenas via variant, wrapper ou composição.
+5. **Code Connect só após estabilização** — conectar Figma ↔ código após 2+ cycles de validação visual.
 
-**Realizado:**
-- Script automático (`specs/design-system/scripts/generate-css-tokens.mjs`) converte JSON → CSS vars
-- 259 CSS vars geradas em `src/app/design-system-tokens.css`:
-  - 42 primitives (cores base)
-  - 82 semantic (backgrounds, text, borders, feedback)
-  - 92 components (button, badge, data-row, icon-tile, menu-item, button-icon, project-summary-card)
-  - 43 typography (sizes, weights, line-heights, presets)
-- Integração Tailwind via `@theme inline` em `globals.css`
-- Utilities habilitadas: `text-ds-*`, `bg-ds-*`, `border-ds-*`, `text-ds-h*`
+---
 
-**Arquivos críticos:**
-- `specs/design-system/tokens/colors.json` — source of truth
-- `specs/design-system/tokens/typography.json` — source of truth
-- `specs/design-system/scripts/generate-css-tokens.mjs` — automação
-- `src/app/design-system-tokens.css` — gerado (nunca editar manualmente)
-- `src/app/globals.css` — import + @theme mapping
+## Token Architecture
 
-**Fluxo:**
+### Arquitetura
+
 ```
 JSON (colors.json, typography.json)
-  ↓
-Script (generate-css-tokens.mjs)
-  ↓
-CSS vars (design-system-tokens.css)
-  ↓
-Tailwind utilities + inline vars (components)
+  ↓ node specs/design-system/scripts/generate-css-tokens.mjs
+CSS vars (src/app/design-system-tokens.css)  ← nunca editar manualmente
+  ↓ importado em globals.css
+Tailwind @theme inline  →  utilities text-ds-*, bg-ds-*, border-ds-*
 ```
 
-### Etapa 3 ~70% Completa: Componentes Semânticos Reutilizáveis
+### Como adicionar tokens
 
-**Componentes criados:**
+1. Editar `specs/design-system/tokens/colors.json` ou `typography.json`
+2. Rodar `node specs/design-system/scripts/generate-css-tokens.mjs`
+3. Commitar JSON + CSS gerado
 
-| Componente | Arquivo | Uso | Status |
-|---|---|---|---|
-| PageHeader | `src/components/page-header.tsx` | Titles + breadcrumbs + actions | ✅ |
-| PageTabs | `src/components/page-tabs.tsx` | Navegação entre abas (via layout) | ✅ |
-| DataRowProjects | `src/app/(internal)/projetos/_components/data-row-projects.tsx` | Lista de projetos | ✅ |
-| ProjectSummaryCard | `src/app/(internal)/projetos/_components/project-summary-card.tsx` | Grid de campos projeto | ✅ |
-| Button variants DS | `src/components/ui/button.tsx` | filled-brand, filled-neutral, outline-* | ✅ |
-| Badge variants DS | `src/components/ui/badge.tsx` | 7 cores (purple, indigo, yellow, etc.) | ✅ |
+### Inventário atual (259 CSS vars)
 
-**Integração por página:**
-- ✅ ProjetosListagem: PageHeader + DataRowProjects + Badge
-- ✅ ProjetoLayout: PageHeader + PageTabs (herança automática para sub-páginas)
-- ✅ ProjetoDetalhe: ProjectSummaryCard + Badge
-- ❌ ClientesListagem: **markup manual, classes shadcn, sem DS tokens**
-- ❌ ClienteDetalhe: **markup manual, 9+ `text-muted-foreground`, sem PageHeader**
+| Categoria | Quantidade | Exemplos de prefixo |
+|---|---|---|
+| Primitives | 42 | `--ds-color-primitive-brand-*` |
+| Semantic | 82 | `--ds-color-semantic-bg-*`, `--ds-color-semantic-text-*`, `--ds-color-semantic-border-*` |
+| Component | 92 | `--ds-color-component-button-*`, `--ds-color-component-badge-*`, `--ds-color-component-data-row-*` |
+| Typography | 43 | `--ds-typography-size-*`, `--ds-typography-weight-*`, `--ds-typography-line-height-*` |
 
-**Pendências Etapa 3:**
-1. Criar `DataRow` genérico reutilizável
-2. Migrar `ClientesListagem` para PageHeader + DataRow
-3. Migrar `ClienteDetalhe` para PageHeader + ProjectSummaryCard + DataRow
-4. Validação: zero classes shadcn nos componentes migrados
+### Utilities Tailwind disponíveis
+
+```
+text-ds-heading   text-ds-muted   text-ds-brand-500
+bg-ds-subtle      border-ds-subtle
+text-ds-sm        text-ds-base    text-ds-lg    text-ds-h5
+```
 
 ---
 
-## Etapa 3 — Completar Pendências
+## Component Contracts
 
-### Decisões Arquiteturais
+Estrutura de 3 níveis:
 
-**DataRow genérico vs. clones específicos:**
-A spec Figma (`design-system-figma-naming.md`) define a anatomia do DataRow com slots para `primaryInfo`, `textContent`, `statusSlot` e `actionsGroup`. O token `dataRow` em `colors.json` é genérico (8 CSS vars: default/hover × bg/border/title + header). DataRowProjects é um consumidor desse token. Em vez de clonar DataRowProjects para cada entidade, criar um componente base `DataRow` com composição por props.
-
-**ProjectSummaryCard:**
-Manter específico (não generalizar). Se ClienteDetalhe precisar do mesmo padrão visual, reutilizar diretamente o componente passando fields diferentes.
-
-### Tarefa 3.1: Criar DataRow genérico
-
-**Arquivo**: `src/components/data-row.tsx`
-
-**Especificação:**
-```tsx
-type DataRowProps = {
-  href: string
-  title: string
-  metadata?: React.ReactNode
-  trailing?: React.ReactNode
-  className?: string
-}
 ```
-
-**Implementação:**
-- Token: `--ds-color-component-data-row-*` (default/hover × bg/border/title)
-- Tipografia: `--ds-typography-size-base` (title), `--ds-typography-size-sm` (metadata)
-- Container: `group flex items-center justify-between gap-4 border-b px-4 py-3 transition-colors`
-- Title: Link com `text-[var(--ds-color-component-data-row-default-title)]`, hover via `group-hover`
-- Metadata: `text-ds-muted` no tamanho sm
-- Trailing: slot livre (badge, botões de ação, ou qualquer ReactNode)
-- Referência de implementação: `data-row-projects.tsx` (copiar padrão de classes)
-
-**Uso previsto:**
-```tsx
-// Em ProjetosListagem (se refatorar — opcional)
-<DataRow href={`/projetos/${id}`} title={nome}
-  metadata={<><span>{clienteNome}</span><span>{data}</span></>}
-  trailing={<Badge variant="purple">{status}</Badge>}
-/>
-
-// Em ClientesListagem
-<DataRow href={`/clientes/${id}`} title={nome}
-  metadata={<>{empresa && <span>{empresa}</span>}{email && <span>{email}</span>}</>}
-  trailing={<div className="flex items-center gap-1"><EditarBtn/><ExcluirBtn/></div>}
-/>
+src/components/ui/          → Level 1: primitives (shadcn + variantes DS)
+src/components/             → Level 2: semânticos reutilizáveis (2+ features)
+src/app/(internal)/*/       → Level 3: específicos de feature
+  _components/
 ```
-
-**Nota:** DataRowProjects existente pode ser refatorado para usar DataRow genérico ou mantido como está. Decisão de refatoração posterior, não bloqueia Etapa 3.
 
 ---
 
-### Tarefa 3.2: Migrar ClientesListagem
+### Level 1 — Primitives (`src/components/ui/`)
 
-**Arquivo**: `src/app/(internal)/clientes/_components/clientes-listagem.tsx`
+#### Button — `button.tsx`
 
-**Estado atual:**
-- `<h1>` manual + `<Button>` solto (linha 71)
-- Divs de linha manual com classes genéricas (linhas 87-149)
-- `text-muted-foreground` (shadcn) em vez de DS tokens
-- `font-medium text-primary` (shadcn) para links
+Variantes DS adicionadas ao `cva()` base do shadcn:
 
-**Mudanças:**
-1. Substituir `<h1>` + botão → `<PageHeader title="Clientes" actions={<ClienteFormModal .../>}>`
-2. Substituir divs de linha → `<DataRow>` para cada cliente:
-   - `href={/clientes/${id}}`
-   - `title={nome}`
-   - `metadata` com empresa_organizacao + email_principal (dados já disponíveis em `getClientes()`)
-   - `trailing` com botões Editar (ClienteFormModal) + Excluir (AlertDialog)
-3. Container da lista: `rounded-lg border border-[var(--ds-color-component-data-row-default-border)]`
-4. Empty state: `text-ds-muted` em vez de `text-muted-foreground`
-
-**Dados da query `getClientes()`:**
-`id`, `nome`, `empresa_organizacao`, `email_principal`, `created_at` — todos disponíveis, sem necessidade de atualizar a query.
-
----
-
-### Tarefa 3.3: Migrar ClienteDetalhe
-
-**Arquivo**: `src/app/(internal)/clientes/_components/cliente-detalhe.tsx`
-
-**Estado atual:**
-- Breadcrumb manual com `text-muted-foreground` (linhas 66-72)
-- Header manual com `<h1>` + botões inline (linhas 75-111)
-- Grid de info com `text-muted-foreground` repetido 9x (linhas 115-142)
-- Lista de projetos com markup manual (linhas 150-166)
-- Zero DS tokens usados
-
-**Mudanças:**
-
-| Elemento atual | Substituir por |
+| Variante | Uso |
 |---|---|
-| Breadcrumb manual (linhas 66-72) | `PageHeader` com `breadcrumbs={[{label:"Clientes",href:"/clientes"},{label:nome}]}` |
-| `<h1>` + botões (linhas 75-111) | `PageHeader` com `title={nome}` e `actions={editar+excluir}` |
-| Grid info (linhas 115-142) | `ProjectSummaryCard` com fields do cliente |
-| Lista projetos (linhas 150-166) | `DataRow` ou `DataRowProjects` para cada projeto |
-| `text-muted-foreground` (9x) | `text-ds-muted` |
-| `text-foreground` | `text-ds-heading` |
-| `text-primary` | Var DS equivalente |
+| `filled-brand` | Ação primária — criar, salvar (roxo DS) |
+| `filled-neutral` | Ação secundária confirmativa |
+| `outline-brand` | Ação secundária com identidade de marca |
+| `outline-neutral` | Ação terciária / cancelar |
 
-**Fields para ProjectSummaryCard:**
+Variantes shadcn mantidas: `default`, `outline`, `secondary`, `ghost`, `destructive`, `link`.
+
+Tokens: `--ds-color-component-button-{variante}-{estado}-{bg|text|border}`
+
+#### Badge — `badge.tsx`
+
+Variantes DS de cor (7):
+
+| Variante | Uso semântico |
+|---|---|
+| `purple` | Status primário / destaque |
+| `indigo` | Info / categoria |
+| `yellow` | Atenção / pendente |
+| `pink` | Especial / marca |
+| `green` | Sucesso / ativo |
+| `sky` | Neutro-claro / secundário |
+| `red` | Erro / crítico |
+
+Tokens: `--ds-color-component-badge-{cor}-{bg|text}`
+
+---
+
+### Level 2 — Semânticos reutilizáveis (`src/components/`)
+
+#### PageHeader — `page-header.tsx`
+
+```
+title (string)         — obrigatório
+breadcrumbs?           — array de {label: string, href?: string}
+                         último item omite href (item atual)
+badge?   (ReactNode)   — renderizado inline ao lado do título (ex: Badge de status)
+actions? (ReactNode)   — renderizado à direita (ex: botões de ação)
+className?
+```
+
+Tokens: `--ds-typography-size-h5`, `--ds-typography-size-sm`, `text-ds-heading`, `text-ds-muted`
+
+**Quando usar:** toda página do painel interno que tem título, breadcrumb ou ações no header.
+
+---
+
+#### PageTabs — `page-tabs.tsx`
+
+```
+tabs       — array de {label: string, href: string}
+className?
+```
+
+`"use client"` — detecta aba ativa via `usePathname()`. Aba ativa recebe `border-b-2 border-ds-brand-500`.
+
+Tokens: `--ds-color-semantic-border-default`, `border-ds-brand-500`, `text-ds-heading`, `text-ds-muted`
+
+**Quando usar:** layouts com sub-navegação entre abas (ex: `/projetos/[id]/` com Visão Geral, Fases, Tarefas).
+
+---
+
+#### DataRow — `data-row.tsx`
+
+```
+href       (string)    — obrigatório, link ao clicar no título
+title      (string)    — obrigatório
+metadata?  (ReactNode) — linha secundária abaixo do título (texto muted, size-sm)
+trailing?  (ReactNode) — slot à direita (badge, botões de ação, qualquer ReactNode)
+className?
+```
+
+Tokens: `--ds-color-component-data-row-{default|hover}-{bg|border|title}`
+
+Container externo esperado (controla borda ao redor da lista):
 ```tsx
-<ProjectSummaryCard fields={[
-  { label: 'Empresa', value: empresa_organizacao },
-  { label: 'Email', value: email_principal },
-  { label: 'Telefone', value: telefone_contato },
-  { label: 'Observações', value: observacoes, colSpan: 2 },
-  { label: 'Criado em', value: formatDate(created_at) },
-  { label: 'Atualizado em', value: formatDate(updated_at) },
-]} />
+<div className="overflow-hidden rounded-lg border border-[var(--ds-color-component-data-row-default-border)]">
+  {items.map(item => <DataRow key={item.id} ... />)}
+</div>
 ```
 
----
-
-### Tarefa 3.4: Validação Final
-
-**Critérios de aceitação (Etapa 3 finalizada):**
-- [ ] DataRow genérico criado em `src/components/data-row.tsx`
-- [ ] ClientesListagem migrada: PageHeader + DataRow, sem markup manual
-- [ ] ClienteDetalhe migrado: PageHeader + ProjectSummaryCard + DataRow/DataRowProjects
-- [ ] Zero `text-muted-foreground` nos componentes migrados
-- [ ] Zero `text-foreground` ou `text-primary` soltos
-- [ ] Cores e tipografia 100% via CSS vars DS
-- [ ] Hover states funcionais em DataRow
-- [ ] Links para detalhe funcionais
-- [ ] Ações (Editar/Excluir) funcionais em ClientesListagem e ClienteDetalhe
-- [ ] Espaçamento respeita escala (4, 8, 12, 16, 24, 32, etc.)
+**Quando usar:** qualquer listagem de entidades com link (clientes, projetos, tarefas). Substituiu markup manual de listas.
 
 ---
 
-## Etapa 4 — Validação e Refinamento com Figma MCP
+#### ProjectSummaryCard — `project-summary-card.tsx`
 
-**Bloco inicial:** Quando URL Figma file for compartilhada.
-
-### Princípio: Granular + Seguro
-
-Não usar MCP para gerar snapshots de páginas inteiras. Para **cada componente**:
-
-1. Capturar design context do node específico no Figma (screenshot + metadata)
-2. Implementar ou refinar o componente no código
-3. Validar visualmente contra o design
-4. Se reutilizável, conectar via Code Connect
-
-> **Nota:** Os parâmetros exatos das ferramentas MCP (get_design_context, add_code_connect_map, etc.) devem ser verificados contra o schema real no início da Etapa 4. Não assumir nomes de parâmetros antes dessa verificação.
-
-### Componentes Prioritários para MCP
-
-#### Phase 4a: Validar Componentes Existentes
-
-**Button** + **Badge**:
-- Capturar design context nos nodes Button + Badge no Figma
-- Comparar variantes DS com implementação
-- Validar alinhamento de cores, tipografia, spacing
-- Se divergências: atualizar componente ou token
-
-**DataRow**:
-- Capturar design context de "Data Row" node
-- Validar default/hover states
-- Validar espaçamento entre elementos (título, metadados, trailing)
-- Comparar com código
-
-#### Phase 4b: Implementar Componentes Novos
-
-Quando novos componentes forem necessários:
-- **Fases**: FaseCard, FaseForm (expandir implementação existente)
-- **Timeline**: TimelineEvent, TimelineCard
-- **Horas**: HorasTable, HorasChart (se especificado em PRD-06)
-
-**Para cada componente:**
 ```
-1. Identificar node no Figma
-2. Capturar design context (screenshot + metadata)
-3. Implementar respeitando tokens DS
-4. Comparar implementação vs design
-5. Se estável, conectar via Code Connect
+fields     — array de SummaryField (ver abaixo)
+className?
+
+SummaryField:
+  label    (string)
+  value    (ReactNode)
+  href?    (string)    — se presente, value vira link clicável
+  colSpan? (2)         — aceita apenas o literal 2 (não qualquer número)
 ```
 
-**Critério de aceitação (Etapa 4 finalizada):**
-- [ ] Componentes existentes validados contra Figma
-- [ ] Novos componentes de Fases/Timeline/Horas implementados + validados
-- [ ] Todos componentes usam CSS vars DS (zero hardcoded colors)
-- [ ] MCP capaz de prover design context para revisão visual sem inspeção manual contínua
+Tokens: `--ds-color-component-project-summary-card-{bg|label|title}`
+
+Renderiza grid 2 colunas com `sm:grid-cols-2`. Campos com `colSpan: 2` ocupam linha inteira.
+
+**Quando usar:** grid de campos informativos de uma entidade (projeto, cliente). Reutilizável para qualquer entidade que precise desse padrão visual.
 
 ---
 
-## Etapa 5 — Code Connect Progressivo
+### Level 3 — Feature-specific
 
-**Começa após Etapa 4a (validação de componentes existentes).**
+#### DataRowProjects — `src/app/(internal)/projetos/_components/data-row-projects.tsx`
 
-### Componentes de Prioridade 1
-
-1. **Button** — variantes filled-brand, filled-neutral, outline-brand, outline-neutral
-   - Source: `src/components/ui/button.tsx`
-
-2. **Badge** — 7 variantes de cor
-   - Source: `src/components/ui/badge.tsx`
-
-3. **DataRow** — componente genérico
-   - Source: `src/components/data-row.tsx`
-
-### Componentes de Prioridade 2
-
-4. **ProjectSummaryCard**
-   - Source: `src/app/(internal)/projetos/_components/project-summary-card.tsx`
-
-5. **PageHeader** + **PageTabs**
-   - Source: `src/components/page-header.tsx`
-   - Source: `src/components/page-tabs.tsx`
-
-> **Nota:** Os parâmetros exatos do Code Connect MCP devem ser verificados contra o schema real das ferramentas disponíveis antes de executar mapeamentos.
-
-**Critério de aceitação (Etapa 5 finalizada):**
-- [ ] Button + Badge mapeados via Code Connect
-- [ ] DataRow mapeado via Code Connect
-- [ ] ProjectSummaryCard mapeado via Code Connect
-- [ ] PageHeader + PageTabs mapeados via Code Connect
+Variante específica de DataRow para projetos — colunas fixas (nome, cliente, status, data). Antecede a criação do `DataRow` genérico. Não refatorado por decisão deliberada (ver Decisões de Design).
 
 ---
 
-## Etapa 6 — Formalizar Spacing Tokens
+## Decisões de Design
 
-**Bloco futuro**, não bloqueia Etapas 3-5.
+### Por que tokens ficam em JSON, não no Figma
 
-### Objetivo
+O repositório é a source of truth. Figma é uma ferramenta de design e contexto visual, não um repositório de contratos. Tokens em JSON:
+- Versionados em git com histórico
+- Gerados automaticamente para CSS — evita divergência manual
+- Independentes de ferramenta externa (sem lock-in de plataforma Figma)
 
-Trazer espaçamento para a mesma formalidade de cores/tipografia:
-- Adicionar `spacing.json` em `specs/design-system/tokens/`
-- Escala: 4, 8, 12, 16, 24, 32, 40, 48, 56, 64, 72, 80, 96, 120 (px)
-- Gerar CSS vars `--ds-spacing-*`
-- Mapear para Tailwind utilities `gap-ds-*`, `p-ds-*`, etc.
-
-### Por Que Agora Ainda Não?
-
-Espaçamento é automaticamente capturado via auto layout no Figma. Componentes existentes já respeitam a escala manualmente (`gap-3`=12px, `gap-4`=16px, `px-4`=16px, `py-3`=12px).
-
-Quando implementar:
-1. Editar `spacing.json` com escala
-2. Atualizar script `generate-css-tokens.mjs` para processar spacing
-3. Executar script → gera CSS vars
-4. Mapear Tailwind `@theme inline`
-5. Refatorar componentes para usar utilities `gap-ds-*`, `p-ds-*`
-
-**Critério de aceitação (Etapa 6 finalizada):**
-- [ ] spacing.json criado com escala formalizada
-- [ ] CSS vars de spacing geradas
-- [ ] Componentes refatorados para usar utilities spacing DS
-- [ ] Zero espaçamento arbitrário no código
+Figma **consome** os tokens via plugin; não os origina.
 
 ---
 
-## Princípios Guia
+### Por que DataRow é genérico em `src/components/`
 
-### 1. Repository as Source of Truth
-- JSON tokens (`colors.json`, `typography.json`) são a origem oficial
-- Figma **consome** esses tokens, não os define
-
-### 2. Tokens Before Components
-- Sempre formalizar token em JSON antes de usar em componentes
-- Evita hex solto, tamanhos arbitrários, spacing fora da escala
-
-### 3. Granular + Seguro
-- MCP é ferramenta de **leitura** (design context)
-- Não usar MCP para gerar markup de páginas inteiras
-- Componente por componente, com validação visual contínua
-
-### 4. Code Connect = Linkagem, Sem Geração
-- Code Connect conecta Figma ↔ repositório
-- Reduz divergência, não substitui implementação manual
-
-### 5. Figma Naming Informa, Sem Ditar
-- Anatomia Figma (actionsGroup, statusSlot, etc.) serve como referência
-- Estrutura de código é decidida pela praticidade, não por espelhamento do Figma
-- Apenas divergir do naming Figma quando o contrato visual divergir
-
-### 6. Escalabilidade
-- Adicionar novos tokens: editar JSON + rodar script
-- Adicionar novos componentes: implementar em código + Code Connect
-- Sistema cresce linearmente, não exponencialmente em complexidade
+Três contextos com o mesmo padrão visual confirmados no momento de criação: clientes, projetos (via DataRowProjects) e tarefas (previsto). Token namespace `dataRow` é genérico em `colors.json` — não pertence a nenhuma entidade. Criar um componente por entidade geraria duplicação de lógica de hover state, tokens e estrutura.
 
 ---
 
-## Arquivos Críticos e Fluxos
+### Por que ProjectSummaryCard está em `src/components/` e não em `projetos/_components/`
 
-### Arquivos de Tokens
+Criado inicialmente em `projetos/_components/`. Movido ao ser reutilizado em `ClienteDetalhe` com o mesmo contrato visual. A decisão seguiu a regra: componente que aparece em 2+ features passa para `src/components/`.
+
+---
+
+### Por que DataRowProjects não foi refatorado para usar DataRow genérico
+
+DataRowProjects tem colunas fixas com layout específico (nome + badge status + data). Refatorar para usar DataRow genérico exigiria configuração via props que aumentaria a complexidade do componente genérico sem benefício claro. A decisão é manter como está e, se necessário, refatorar quando um terceiro caso de uso surgir com requisitos similares.
+
+---
+
+### Por que Etapas 4-6 não são mais roadmap
+
+Quando o PRD original foi criado, Etapas 4 (Figma MCP), 5 (Code Connect) e 6 (spacing tokens) eram listadas como "próximas etapas". Com a formalização de `07_design_ui.md`, essas atividades passaram a ser parte do **fluxo normal** de desenvolvimento:
+
+- **Validação com Figma MCP** → Phase D do `implement_plan` para qualquer feature com UI
+- **Code Connect** → executado após componente estabilizar (2+ cycles), usando `/figma:code-connect-components`
+- **Spacing tokens** → adicionar `spacing.json` + rodar script quando o primeiro componente precisar de tokens formalizados de espaçamento
+
+Não há roadmap pendente — há um workflow que se aplica a cada nova feature.
+
+---
+
+## Tokens com Componentes Pendentes
+
+Tokens existem em `colors.json` e CSS vars foram geradas. Componentes serão implementados conforme demanda de features:
+
+| Token namespace | CSS vars geradas | Componente |
+|---|---|---|
+| `menuItem` | ✅ | Sem componente DS ainda |
+| `buttonIcon` | ✅ | Sem componente DS ainda |
+| `iconTile` | ✅ | Sem componente DS ainda |
+
+---
+
+## Arquivos Críticos
 
 | Arquivo | Propósito | Editar? |
 |---|---|---|
-| `specs/design-system/tokens/colors.json` | Primitives → Semantic → Component | ✅ Sim (conforme necessário) |
-| `specs/design-system/tokens/typography.json` | Sizes, weights, line-heights, presets | ✅ Sim (conforme necessário) |
-| `specs/design-system/scripts/generate-css-tokens.mjs` | Converte JSON → CSS vars | ✅ Sim (adicionar domínios novos) |
-| `src/app/design-system-tokens.css` | CSS vars geradas | ❌ **NUNCA** (gerado automaticamente) |
-| `src/app/globals.css` | Import + @theme mapping | ✅ Sim (adicionar utilities novas) |
-
-### Arquivos de Componentes
-
-| Arquivo | Propósito | Status |
-|---|---|---|
-| `src/components/page-header.tsx` | Header semântico reutilizável | ✅ Pronto |
-| `src/components/page-tabs.tsx` | Tabs semânticas reutilizáveis | ✅ Pronto |
-| `src/components/ui/button.tsx` | Button com variantes DS | ✅ Pronto + variants |
-| `src/components/ui/badge.tsx` | Badge com 7 variantes DS | ✅ Pronto + variants |
-| `src/components/data-row.tsx` | DataRow genérico reutilizável | 🔄 **CRIAR** |
-| `src/app/(internal)/projetos/_components/data-row-projects.tsx` | Data Row para projetos (específico) | ✅ Pronto |
-| `src/app/(internal)/projetos/_components/project-summary-card.tsx` | Summary card para projeto | ✅ Pronto |
-| `src/app/(internal)/clientes/_components/clientes-listagem.tsx` | Listagem com PageHeader + DataRow | 🔄 **MIGRAR** |
-| `src/app/(internal)/clientes/_components/cliente-detalhe.tsx` | Detalhe com PageHeader + SummaryCard | 🔄 **MIGRAR** |
-
-### Tokens com Componentes Pendentes de Implementação
-
-| Token (colors.json) | CSS vars geradas | Componente no código |
-|---|---|---|
-| `menuItem` | ✅ Sim | ❌ Sem componente DS |
-| `buttonIcon` | ✅ Sim | ❌ Sem componente DS |
-| `iconTile` | ✅ Sim | ❌ Sem componente DS |
-
-> Esses tokens existem para uso futuro. Não bloqueiam a Etapa 3. Componentes serão implementados quando necessários no contexto de DataRow ou outras features.
-
-### Queries Relevantes
-
-| Arquivo | Propósito | Atualizar? |
-|---|---|---|
-| `src/queries/cliente.queries.ts` | `getClientes()` retorna: id, nome, empresa_organizacao, email_principal, created_at | Não (dados suficientes para DataRow) |
-| `src/queries/cliente.queries.ts` | `getClienteById()` retorna todos campos + telefone + observações | Não (dados suficientes para SummaryCard) |
+| `specs/design-system/tokens/colors.json` | Source of truth de cores | ✅ Para adicionar tokens |
+| `specs/design-system/tokens/typography.json` | Source of truth de tipografia | ✅ Para adicionar tokens |
+| `specs/design-system/scripts/generate-css-tokens.mjs` | Converte JSON → CSS vars | ✅ Para suportar novos domínios |
+| `src/app/design-system-tokens.css` | CSS vars geradas | ❌ Nunca editar manualmente |
+| `src/app/globals.css` | Import + @theme Tailwind | ✅ Para adicionar utilities |
 
 ---
 
 ## Referências
 
-- `CLAUDE.md` — instruções globais do projeto
-- `specs/design-system/foundations/design-system-colors.md` — arquitetura 3 camadas (primitive → semantic → component)
-- `specs/design-system/foundations/design-system-typography.md` — tipografia, escala, baseline grid 4px
-- `specs/design-system/foundations/design-system-figma-naming.md` — anatomia de componentes, naming, divergence triggers
-- `specs/design-system/tokens/colors.json` — fonte oficial de cores (9 component namespaces)
-- `specs/design-system/tokens/typography.json` — fonte oficial de tipografia
+- `specs/foundation/07_design_ui.md` — workflow de integração Figma no processo de desenvolvimento
+- `specs/design-system/foundations/design-system-colors.md` — arquitetura de tokens de cor
+- `specs/design-system/foundations/design-system-typography.md` — tokens de tipografia, escala, presets
+- `specs/design-system/foundations/design-system-figma-naming.md` — naming conventions Figma
+- `specs/design-system/tokens/colors.json` — source of truth de cores
+- `specs/design-system/tokens/typography.json` — source of truth de tipografia
 
 ---
 
-## Notas Finais
-
-- **Figma file URL**: Pendente — necessária para iniciar Etapas 4-5
-- **Design System branch**: `modulo/design-system-frontend` (branch atual)
-- **No breaking changes**: Migração respeita funcionalidade existente, substitui apenas markup/styling
-- **DataRowProjects**: Não será refatorado para usar DataRow genérico nesta etapa. Decisão de migração posterior.
-
----
-
-**Documento criado**: 2026-03-16
-**Última revisão**: 2026-03-16 (v2 — correções pós-análise de specs e código)
-**Próxima revisão**: Após Etapa 3 finalizada
+**Versão**: 2.0 — Reescrito como referência de contratos (2026-03-19)
+**Versão anterior**: PRD de migração Etapas 2-3 (concluído)
