@@ -435,7 +435,7 @@ Ver **`GIT_WORKFLOW.md`** para guia completo. Resumo:
 ```
 main                     ← produção, releases estáveis
 └── dev                  ← integration, staging
-    ├── feature/prd-NN-descricao      ← PRD de produto (1 por branch)
+    ├── feature/prd-NN-descricao      ← PRD (produto, perf, etc.)
     ├── feature/ds-descricao          ← DS fundacional (spacing, tokens)
     ├── fix/escopo-descricao          ← tweak rápido ou ajuste DS
     └── hotfix/descricao              ← crítico em produção
@@ -444,6 +444,7 @@ main                     ← produção, releases estáveis
 **Nomenclatura:**
 - `feature/prd-05-pendencias` — PRD único
 - `feature/prd-04a-registros-backend` — PRD com letra (múltiplos sub-PRDs)
+- `feature/prd-07-perf-auth-initial-load` — PRD de otimização
 - `feature/ds-spacing-tokens` — DS fundacional
 - `fix/ds-button-hover` — DS tweak/fix
 
@@ -470,6 +471,8 @@ tipo(escopo): descrição curta no imperativo
 
 **Escopos:** `cliente` · `projeto` · `fase` · `tarefa` · `timeline` · `pendencia` · `horas` · `registros` · `portal` · `auth` · `db` · `ui` · `design-system` · `config`
 
+**Escopos compostos (otimização):** `perf-{area}` — onde `{area}` é um escopo existente. Usado com tipo `feat` para features de otimização.
+
 **Exemplos:**
 ```
 feat(pendencia): criar modelo e queries
@@ -478,6 +481,7 @@ fix(design-system): ajustar hover state button outline
 refactor(queries): separar portal e interno
 chore(deps): atualizar tailwindcss
 docs(readme): adicionar instruções
+feat(perf-auth): streaming do shell com Suspense boundary
 ```
 
 ### Estratégia de merge
