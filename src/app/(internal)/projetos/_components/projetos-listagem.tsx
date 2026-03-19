@@ -11,7 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/page-header'
 import { DataRowProjects } from './data-row-projects'
 import { STATUS_LABELS } from '@/lib/constants'
@@ -24,6 +23,7 @@ type ProjetoListItem = {
   previsao_entrega: Date | null
   created_at: Date
   cliente: { id: string; nome: string }
+  fases: { _count: { tarefas: number } }[]
 }
 
 export function ProjetosListagem({
@@ -62,56 +62,57 @@ export function ProjetosListagem({
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Projetos"
+        title="Meus projetos"
         actions={
-          <Link href="/projetos/novo">
-            <Button variant="filled-brand">Novo projeto</Button>
-          </Link>
+          <div className="flex items-center gap-4">
+            <Select
+              value={statusAtual}
+              onValueChange={(v) => handleFiltro('status', v ?? '')}
+            >
+              <SelectTrigger className="h-14 rounded-[4px] border-[var(--ds-color-component-button-outline-brand-default-border)] text-[var(--ds-color-component-button-outline-brand-default-text)] hover:bg-[var(--ds-color-component-button-outline-brand-hover-bg)]">
+                <SelectValue placeholder="Selecionar status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Todos os status</SelectItem>
+                {Object.entries(STATUS_LABELS).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={clienteAtual}
+              onValueChange={(v) => handleFiltro('cliente', v ?? '')}
+            >
+              <SelectTrigger className="h-14 rounded-[4px] border-[var(--ds-color-component-button-outline-brand-default-border)] text-[var(--ds-color-component-button-outline-brand-default-text)] hover:bg-[var(--ds-color-component-button-outline-brand-hover-bg)]">
+                <SelectValue placeholder="Selecionar cliente" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Todos os clientes</SelectItem>
+                {clientes.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.nome}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {temFiltro && (
+              <Button variant="ghost" size="sm" onClick={limparFiltros} disabled={isPending}>
+                Limpar filtros
+              </Button>
+            )}
+
+            <Link href="/projetos/novo">
+              <Button variant="filled-brand" className="h-14 rounded-[4px]">
+                Novo projeto
+              </Button>
+            </Link>
+          </div>
         }
       />
-
-      {/* Filtros */}
-      <div className="flex flex-wrap items-center gap-3">
-        <Select
-          value={statusAtual}
-          onValueChange={(v) => handleFiltro('status', v ?? '')}
-        >
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Todos os status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">Todos os status</SelectItem>
-            {Object.entries(STATUS_LABELS).map(([value, label]) => (
-              <SelectItem key={value} value={value}>
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={clienteAtual}
-          onValueChange={(v) => handleFiltro('cliente', v ?? '')}
-        >
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Todos os clientes" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">Todos os clientes</SelectItem>
-            {clientes.map((c) => (
-              <SelectItem key={c.id} value={c.id}>
-                {c.nome}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {temFiltro && (
-          <Button variant="ghost" size="sm" onClick={limparFiltros}>
-            Limpar filtros
-          </Button>
-        )}
-      </div>
 
       {/* Lista */}
       {projetos.length === 0 ? (
@@ -119,21 +120,41 @@ export function ProjetosListagem({
           Nenhum projeto encontrado.
         </p>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-[var(--ds-color-component-data-row-default-border)]">
-          {projetos.map((projeto) => (
-            <DataRowProjects
-              key={projeto.id}
-              id={projeto.id}
-              nome={projeto.nome}
-              clienteNome={projeto.cliente.nome}
-              dataInicio={projeto.data_inicio}
-              badge={
-                <Badge variant="purple">
-                  {STATUS_LABELS[projeto.status] ?? projeto.status}
-                </Badge>
-              }
-            />
-          ))}
+        <div className="flex flex-col gap-4 rounded-[6px] bg-white p-6">
+          {/* ListHeader */}
+          <div
+            className="flex shrink-0 items-center gap-16 rounded-[6px] px-6 py-4 text-[length:var(--ds-typography-size-sm)] font-semibold leading-[var(--ds-typography-line-height-sm)]"
+            style={{
+              backgroundColor: 'var(--ds-color-component-data-row-header-bg)',
+              color: 'var(--ds-color-component-data-row-header-text)',
+            }}
+          >
+            <span className="w-[420px] shrink-0">Projetos</span>
+            <span className="w-20 shrink-0">Tarefas</span>
+            <span className="w-20 shrink-0">Horas</span>
+            <span className="w-[140px] shrink-0">Orçamento</span>
+            <span className="w-[140px] shrink-0">Data de início</span>
+            <span className="w-48 shrink-0">Previsão de término</span>
+          </div>
+
+          {/* Rows */}
+          {projetos.map((projeto) => {
+            const totalTarefas = projeto.fases.reduce(
+              (sum, f) => sum + f._count.tarefas,
+              0,
+            )
+            return (
+              <DataRowProjects
+                key={projeto.id}
+                id={projeto.id}
+                nome={projeto.nome}
+                clienteNome={projeto.cliente.nome}
+                totalTarefas={totalTarefas}
+                dataInicio={projeto.data_inicio}
+                previsaoEntrega={projeto.previsao_entrega}
+              />
+            )
+          })}
         </div>
       )}
     </div>

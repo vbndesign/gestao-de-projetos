@@ -109,6 +109,7 @@ Tokens: `--ds-color-component-badge-{cor}-{bg|text}`
 
 ```
 title (string)         — obrigatório
+subtitle?  (string)    — linha secundária em text-ds-muted, abaixo do título
 breadcrumbs?           — array de {label: string, href?: string}
                          último item omite href (item atual)
 badge?   (ReactNode)   — renderizado inline ao lado do título (ex: Badge de status)
@@ -118,22 +119,26 @@ className?
 
 Tokens: `--ds-typography-size-h5`, `--ds-typography-size-sm`, `text-ds-heading`, `text-ds-muted`
 
-**Quando usar:** toda página do painel interno que tem título, breadcrumb ou ações no header.
+**Quando usar:** toda página do painel interno que tem título, breadcrumb ou ações no header. `subtitle` opcional para contexto adicional (ex: nome do cliente em detalhe de projeto).
 
 ---
 
 #### PageTabs — `page-tabs.tsx`
 
 ```
-tabs       — array de {label: string, href: string}
+tabs       — array de {label: string, href: string, icon?: ReactNode}
 className?
 ```
 
-`"use client"` — detecta aba ativa via `usePathname()`. Aba ativa recebe `border-b-2 border-ds-brand-500`.
+`"use client"` — detecta aba ativa via `usePathname()`. Cada aba renderiza como `<Link>` com `buttonVariants()`:
+- Ativa: `variant="filled-brand"`
+- Inativa: `variant="outline-brand"`
 
-Tokens: `--ds-color-semantic-border-default`, `border-ds-brand-500`, `text-ds-heading`, `text-ds-muted`
+Classes aplicadas: `h-14 rounded-[4px] gap-2` (icon + label com spacing).
 
-**Quando usar:** layouts com sub-navegação entre abas (ex: `/projetos/[id]/` com Visão Geral, Fases, Tarefas).
+Tokens: `--ds-color-component-button-filled-brand-default-*`, `--ds-color-component-button-outline-brand-default-*`, `text-ds-heading`, `text-ds-muted`
+
+**Quando usar:** layouts com sub-navegação entre abas (ex: `/projetos/[id]/` com Visão Geral, Fases, Tarefas). Ícones opcionais para melhor UX.
 
 ---
 
@@ -160,7 +165,11 @@ Container externo esperado (controla borda ao redor da lista):
 
 ---
 
-#### ProjectSummaryCard — `project-summary-card.tsx`
+#### ProjectSummary — `project-summary.tsx`
+
+Arquivo exporta **dois componentes**:
+
+##### 1. SummaryFields (legacy API)
 
 ```
 fields     — array de SummaryField (ver abaixo)
@@ -173,11 +182,36 @@ SummaryField:
   colSpan? (2)         — aceita apenas o literal 2 (não qualquer número)
 ```
 
-Tokens: `--ds-color-component-project-summary-card-{bg|label|title}`
-
 Renderiza grid 2 colunas com `sm:grid-cols-2`. Campos com `colSpan: 2` ocupam linha inteira.
 
-**Quando usar:** grid de campos informativos de uma entidade (projeto, cliente). Reutilizável para qualquer entidade que precise desse padrão visual.
+**Uso:** `ClienteDetalhe` — grid de informações do cliente (empresa, email, telefone, observações, datas).
+
+##### 2. ProjectSummary (dual-card API, tipada)
+
+```
+clienteNome        (string)         — obrigatório
+clienteHref?       (string)         — se presente, nome vira link
+tarefasConcluidas  (number)         — X de Y
+totalTarefas       (number)
+horasTrabalhadas   (number)         — X de Y estimadas
+horasEstimadas     (number)
+orcamento          (number | null)  — null = exibe "—"
+dataInicio         (Date)
+previsaoTermino    (Date | null)    — null = exibe "—" em vez de "X dias"
+className?
+```
+
+Layout:
+- **summaryCard (flex-1):** border com tokens datarow, contém Cliente + Tarefas + Horas
+- **highlightCard (shrink-0):** `bg-[var(--ds-color-component-project-summary-card-bg)]`, contém Orçamento + Data início + Previsão (valores em bold)
+
+Formatação:
+- `previsaoTermino` → "X dias" (cálculo de dias restantes a partir de hoje) ou "—"
+- `orcamento` → "R$ X" pt-BR formatado ou "—"
+
+Tokens: `--ds-color-component-project-summary-card-{bg|label|title}`, `--ds-color-component-data-row-{default|hover}-{bg|border}`
+
+**Uso:** `ProjetoDetalhe` — summary dual-card de status de projeto com contexto de cliente e prazos.
 
 ---
 
@@ -185,7 +219,28 @@ Renderiza grid 2 colunas com `sm:grid-cols-2`. Campos com `colSpan: 2` ocupam li
 
 #### DataRowProjects — `src/app/(internal)/projetos/_components/data-row-projects.tsx`
 
-Variante específica de DataRow para projetos — colunas fixas (nome, cliente, status, data). Antecede a criação do `DataRow` genérico. Não refatorado por decisão deliberada (ver Decisões de Design).
+Componente específico para listagem tabular de projetos — layout com colunas fixas e widths definidos.
+
+```
+id                (string)          — obrigatório, para href
+nome              (string)          — obrigatório
+clienteNome       (string)          — obrigatório
+totalTarefas      (number)          — total de tarefas do projeto
+dataInicio        (Date)            — obrigatório
+previsaoEntrega   (Date | null)     — opcional
+className?
+```
+
+Layout:
+- Container: `<Link>` com `group` class para hover states
+- **primaryInfo (w-[420px]):** IconTile inline + texto (nome + clienteNome)
+  - IconTile: `bg-[var(--ds-color-component-icon-tile-purple-bg)]` com ícone `BookOpen`
+- **Colunas:** tarefas (w-20) | horas (w-20) | orçamento (w-[140px]) | data início (w-[140px]) | previsão (w-48)
+- Hover: `group-hover:` em título muda para cor `hover-title`
+
+Tokens: `--ds-color-component-data-row-{default|hover}-{bg|border|title}`, `--ds-color-component-icon-tile-purple-{bg|icon}`, `text-ds-muted`
+
+**Contexto:** parte da listagem `/projetos` com ListHeader. Colunas são responsáveis por representar status do projeto de forma compacta.
 
 ---
 
@@ -267,5 +322,6 @@ Tokens existem em `colors.json` e CSS vars foram geradas. Componentes serão imp
 
 ---
 
-**Versão**: 2.0 — Reescrito como referência de contratos (2026-03-19)
+**Versão**: 2.1 — Atualizado após PRD-05 (alinhamento visual, dual-card ProjectSummary, PageTabs com botões, DataRowProjects tabular) (2026-03-19)
+**Versão 2.0**: Reescrito como referência de contratos
 **Versão anterior**: PRD de migração Etapas 2-3 (concluído)
