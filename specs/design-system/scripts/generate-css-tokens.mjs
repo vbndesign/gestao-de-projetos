@@ -115,11 +115,17 @@ const SECTION_LABELS = {
   "font.weight": "Typography — Weight",
   "text.body": "Typography — Text Body",
   "text.heading": "Typography — Text Heading",
+  "spacing": "Spacing",
+  "radius.primitive": "Radius Primitives",
+  "radius.semantic": "Radius Semantic",
 };
 
 function sectionKey(tokenPath) {
   const parts = tokenPath.split(".");
-  return parts.slice(0, 2).join(".");
+  const twoLevel = parts.slice(0, 2).join(".");
+  // If the two-level key matches a known label, use it; otherwise fall back to single-level
+  if (twoLevel in SECTION_LABELS) return twoLevel;
+  return parts[0];
 }
 
 // ---------------------------------------------------------------------------
@@ -135,11 +141,19 @@ try {
   const typographyJson = JSON.parse(
     readFileSync(path.resolve(TOKENS_DIR, "typography.json"), "utf-8"),
   );
+  const spacingJson = JSON.parse(
+    readFileSync(path.resolve(TOKENS_DIR, "spacing.json"), "utf-8"),
+  );
+  const radiusJson = JSON.parse(
+    readFileSync(path.resolve(TOKENS_DIR, "radius.json"), "utf-8"),
+  );
 
   // Build unified flat map
   const flatMap = {
     ...flattenObject(colorsJson),
     ...flattenObject(typographyJson),
+    ...flattenObject(spacingJson),
+    ...flattenObject(radiusJson),
   };
 
   const totalRaw = Object.keys(flatMap).length;
@@ -161,8 +175,19 @@ try {
   const textPaths = Object.keys(resolved)
     .filter((p) => p.startsWith("text."))
     .sort();
+  const spacingPaths = Object.keys(resolved)
+    .filter((p) => p.startsWith("spacing."))
+    .sort((a, b) => {
+      // Sort numerically by the spacing value key
+      const numA = parseInt(a.split(".")[1], 10);
+      const numB = parseInt(b.split(".")[1], 10);
+      return numA - numB;
+    });
+  const radiusPaths = Object.keys(resolved)
+    .filter((p) => p.startsWith("radius."))
+    .sort();
 
-  const allPaths = [...colorPaths, ...fontPaths, ...textPaths];
+  const allPaths = [...colorPaths, ...fontPaths, ...textPaths, ...spacingPaths, ...radiusPaths];
 
   // Generate CSS
   const lines = [

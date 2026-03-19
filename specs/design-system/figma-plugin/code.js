@@ -8,6 +8,12 @@ const DEFAULT_MODE_NAME = "Default";
 const BASELINE_GRID = 4;
 const TEXT_STYLE_PREFIX = "Typography";
 
+const ALLOWED_SPACING_SCALE = [4, 8, 12, 16, 24, 32, 40, 48, 56, 64, 72, 80, 96, 120];
+
+const ALLOWED_RADIUS_PRIMITIVES = ["none", "xs", "sm", "md", "lg", "xl", "full"];
+
+const ALLOWED_RADIUS_SEMANTICS = ["avatar", "badge", "button", "card", "dialog", "input", "tag", "tooltip"];
+
 const ALLOWED_FONT_SIZES = {
   sm: 14,
   base: 16,
@@ -268,6 +274,38 @@ figma.ui.onmessage = async (message) => {
           " semantic variables, " +
           summary.componentCount +
           " component variables.",
+      );
+      return;
+    }
+
+    if (message.type === "IMPORT_RADIUS") {
+      const tokens = JSON.parse(message.payload);
+      validateRadiusTokens(tokens);
+      const summary = await syncRadius(tokens);
+
+      figma.ui.postMessage({
+        type: "IMPORT_SUCCESS",
+        domain: "radius",
+        summary: summary,
+      });
+      figma.notify(
+        "Radius import complete: " + summary.primitiveCount + " primitive, " + summary.semanticCount + " semantic variables.",
+      );
+      return;
+    }
+
+    if (message.type === "IMPORT_SPACING") {
+      const tokens = JSON.parse(message.payload);
+      validateSpacingTokens(tokens);
+      const summary = await syncSpacing(tokens);
+
+      figma.ui.postMessage({
+        type: "IMPORT_SUCCESS",
+        domain: "spacing",
+        summary: summary,
+      });
+      figma.notify(
+        "Spacing import complete: " + summary.primitiveCount + " variables.",
       );
       return;
     }
@@ -1171,6 +1209,149 @@ async function syncTextStyles(styleDefinitions, syncedVariables) {
     style.setBoundVariable("fontWeight", weightVariable);
     style.description = "Generated from typography variables.";
   });
+}
+
+function validateRadiusTokens(tokens) {
+  assert(isPlainObject(tokens), "Token file must export an object.");
+  assert(isPlainObject(tokens.radius), 'Missing top-level "radius" object.');
+  assert(isPlainObject(tokens.radius.primitive), "Missing radius.primitive.");
+  assert(isPlainObject(tokens.radius.semantic), "Missing radius.semantic.");
+
+  const primitiveKeys = Object.keys(tokens.radius.primitive).sort();
+  const expectedPrimitiveKeys = ALLOWED_RADIUS_PRIMITIVES.slice().sort();
+  assert(
+    JSON.stringify(primitiveKeys) === JSON.stringify(expectedPrimitiveKeys),
+    "radius.primitive keys must be exactly: " + expectedPrimitiveKeys.join(", ") + ".",
+  );
+
+  Object.entries(tokens.radius.primitive).forEach(function (entry) {
+    assert(
+      typeof entry[1] === "string" && /^\d+px$/.test(entry[1]),
+      'radius.primitive.' + entry[0] + ' must be a "Npx" string, got: ' + JSON.stringify(entry[1]) + ".",
+    );
+  });
+
+  const semanticKeys = Object.keys(tokens.radius.semantic).sort();
+  const expectedSemanticKeys = ALLOWED_RADIUS_SEMANTICS.slice().sort();
+  assert(
+    JSON.stringify(semanticKeys) === JSON.stringify(expectedSemanticKeys),
+    "radius.semantic keys must be exactly: " + expectedSemanticKeys.join(", ") + ".",
+  );
+
+  Object.entries(tokens.radius.semantic).forEach(function (entry) {
+    assert(
+      /^\{radius\.primitive\.[a-z]+\}$/.test(entry[1]),
+      "radius.semantic." + entry[0] + " must be a {radius.primitive.*} reference, got: " + JSON.stringify(entry[1]) + ".",
+    );
+  });
+}
+
+function toRadiusPrimitiveDefinitions(tokens) {
+  return Object.entries(tokens.radius.primitive).map(function (entry) {
+    return {
+      collectionName: COLLECTIONS.PRIMITIVES,
+      name: "radius/" + entry[0],
+      resolvedType: "FLOAT",
+      scopes: ["CORNER_RADIUS"],
+      value: {
+        kind: "RAW",
+        value: parseInt(entry[1], 10),
+      },
+    };
+  });
+}
+
+function toRadiusSemanticDefinitions(tokens) {
+  return Object.entries(tokens.radius.semantic).map(function (entry) {
+    const match = /^\{radius\.primitive\.([a-z]+)\}$/.exec(entry[1]);
+    assert(match, "Invalid radius reference: " + entry[1] + ".");
+    return {
+      collectionName: COLLECTIONS.SEMANTIC,
+      name: "radius/" + entry[0],
+      resolvedType: "FLOAT",
+      scopes: ["CORNER_RADIUS"],
+      value: {
+        kind: "ALIAS",
+        targetCollectionName: COLLECTIONS.PRIMITIVES,
+        targetName: "radius/" + match[1],
+      },
+    };
+  });
+}
+
+async function syncRadius(tokens) {
+  const primitiveDefinitions = toRadiusPrimitiveDefinitions(tokens);
+  const semanticDefinitions = toRadiusSemanticDefinitions(tokens);
+  const syncResult = await syncVariableDefinitions(
+    primitiveDefinitions.concat(semanticDefinitions),
+    {
+      Primitives: ["radius/"],
+      Semantic: ["radius/"],
+    },
+  );
+
+  return {
+    primitiveCount: primitiveDefinitions.length,
+    semanticCount: semanticDefinitions.length,
+    removedVariableCount: syncResult.removedVariableCount,
+  };
+}
+
+function parsePx(value, label) {
+  assert(
+    typeof value === "string" && /^\d+px$/.test(value),
+    label + ' must be a string in the format "Npx" (e.g. "8px"), got: ' + JSON.stringify(value) + ".",
+  );
+  return parseInt(value, 10);
+}
+
+function validateSpacingTokens(tokens) {
+  assert(isPlainObject(tokens), "Token file must export an object.");
+  assert(isPlainObject(tokens.spacing), 'Missing top-level "spacing" object.');
+
+  const keys = Object.keys(tokens.spacing).map(Number).sort(function (a, b) { return a - b; });
+  const expectedKeys = ALLOWED_SPACING_SCALE.slice();
+
+  assert(
+    JSON.stringify(keys) === JSON.stringify(expectedKeys),
+    "spacing keys must be exactly: " + expectedKeys.join(", ") + ". Got: " + keys.join(", ") + ".",
+  );
+
+  Object.entries(tokens.spacing).forEach(function (entry) {
+    const key = entry[0];
+    const value = entry[1];
+    const parsed = parsePx(value, "spacing." + key);
+    assert(parsed === Number(key), "spacing." + key + " value must equal " + key + "px, got " + value + ".");
+  });
+}
+
+function toSpacingPrimitiveDefinitions(tokens) {
+  return Object.entries(tokens.spacing)
+    .sort(function (a, b) { return Number(a[0]) - Number(b[0]); })
+    .map(function (entry) {
+      return {
+        collectionName: COLLECTIONS.PRIMITIVES,
+        name: "spacing/" + entry[0],
+        resolvedType: "FLOAT",
+        scopes: ["GAP", "WIDTH_HEIGHT"],
+        value: {
+          kind: "RAW",
+          value: parsePx(entry[1], "spacing." + entry[0]),
+        },
+      };
+    });
+}
+
+async function syncSpacing(tokens) {
+  const primitiveDefinitions = toSpacingPrimitiveDefinitions(tokens);
+  const syncResult = await syncVariableDefinitions(primitiveDefinitions, {
+    Primitives: ["spacing/"],
+  });
+
+  return {
+    primitiveCount: primitiveDefinitions.length,
+    removedVariableCount: syncResult.removedVariableCount,
+  };
 }
 
 async function syncTypography(tokens) {

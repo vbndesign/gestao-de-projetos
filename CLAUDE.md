@@ -165,6 +165,8 @@ export default function MyComponent() {
 | `specs/design-system/foundations/design-system-frontend-implementation.md` | Contratos de componentes existentes (Level 1-3), token architecture, decisões de design |
 | `specs/design-system/foundations/design-system-colors.md` | Antes de alterar tokens de cor |
 | `specs/design-system/foundations/design-system-typography.md` | Antes de alterar tokens de tipografia |
+| `specs/design-system/foundations/design-system-spacing.md` | Antes de alterar tokens de espaçamento |
+| `specs/design-system/foundations/design-system-radius.md` | Antes de alterar tokens de border-radius |
 | `specs/design-system/foundations/design-system-figma-naming.md` | Antes de criar/renomear componentes com raiz no Figma |
 
 ### Source of truth
@@ -172,6 +174,8 @@ export default function MyComponent() {
 Tokens em `specs/design-system/tokens/`:
 - `colors.json` — arquitetura primitive → semantic → component
 - `typography.json` — arquitetura primitive → semantic
+- `spacing.json` — escala primitiva (4–120px)
+- `radius.json` — arquitetura primitive → semantic
 
 O repositório é a fonte da verdade. Figma consome esses tokens; não é a origem.
 

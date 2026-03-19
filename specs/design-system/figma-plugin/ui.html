@@ -93,6 +93,18 @@
         font-weight: 700;
       }
 
+      button.brand {
+        background: #7c3aed;
+        color: #ede9fe;
+        font-weight: 700;
+      }
+
+      button.teal {
+        background: #0d9488;
+        color: #ccfbf1;
+        font-weight: 700;
+      }
+
       button:disabled {
         opacity: 0.6;
         cursor: not-allowed;
@@ -129,9 +141,9 @@
       <div class="card">
         <h1>Design Tokens Importer</h1>
         <p class="hint">
-          Import typography tokens into <strong>variables + Text Styles</strong>, or import
-          color tokens into <strong>variables only</strong>. The plugin syncs the
-          <code>Primitives</code> and <code>Semantic</code> collections from repository JSON files.
+          Import typography tokens into <strong>variables + Text Styles</strong>, or color, spacing and
+          radius tokens into <strong>variables only</strong>. The plugin syncs the
+          <code>Primitives</code>, <code>Semantic</code> and <code>Components</code> collections from repository JSON files.
         </p>
       </div>
 
@@ -140,7 +152,7 @@
         <textarea
           id="token-input"
           spellcheck="false"
-          placeholder="Paste specs/design-system/tokens/typography.json or colors.json here"
+          placeholder="Paste typography.json, colors.json, spacing.json or radius.json here"
         ></textarea>
         <div class="actions">
           <label class="file-button" for="file-input">Load JSON file</label>
@@ -154,6 +166,8 @@
         <div class="actions">
           <button id="import-typography-button" class="primary" type="button">Import typography</button>
           <button id="import-colors-button" class="accent" type="button">Import colors</button>
+          <button id="import-spacing-button" class="brand" type="button">Import spacing</button>
+          <button id="import-radius-button" class="teal" type="button">Import radius</button>
           <button id="close-button" class="secondary" type="button">Close</button>
         </div>
         <p id="status" class="status hint">Select or paste a token file to start.</p>
@@ -167,6 +181,8 @@
       const clearButton = document.getElementById("clear-button");
       const importTypographyButton = document.getElementById("import-typography-button");
       const importColorsButton = document.getElementById("import-colors-button");
+      const importSpacingButton = document.getElementById("import-spacing-button");
+      const importRadiusButton = document.getElementById("import-radius-button");
       const closeButton = document.getElementById("close-button");
       const status = document.getElementById("status");
 
@@ -245,6 +261,40 @@
         );
       });
 
+      importSpacingButton.addEventListener("click", () => {
+        if (!ensureInput("spacing")) {
+          return;
+        }
+
+        setStatus("Importing spacing variables...", "hint");
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: "IMPORT_SPACING",
+              payload: tokenInput.value,
+            },
+          },
+          "*",
+        );
+      });
+
+      importRadiusButton.addEventListener("click", () => {
+        if (!ensureInput("radius")) {
+          return;
+        }
+
+        setStatus("Importing radius variables...", "hint");
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: "IMPORT_RADIUS",
+              payload: tokenInput.value,
+            },
+          },
+          "*",
+        );
+      });
+
       closeButton.addEventListener("click", () => {
         parent.postMessage(
           {
@@ -274,6 +324,22 @@
         if (message.type === "IMPORT_SUCCESS" && message.domain === "colors") {
           setStatus(
             `Color import completed.\nPrimitives: ${message.summary.primitiveCount}\nSemantic: ${message.summary.semanticCount}\nComponents: ${message.summary.componentCount}\nRemoved obsolete variables: ${message.summary.removedVariableCount}`,
+            "ok",
+          );
+          return;
+        }
+
+        if (message.type === "IMPORT_SUCCESS" && message.domain === "spacing") {
+          setStatus(
+            `Spacing import completed.\nPrimitives: ${message.summary.primitiveCount}\nRemoved obsolete variables: ${message.summary.removedVariableCount}`,
+            "ok",
+          );
+          return;
+        }
+
+        if (message.type === "IMPORT_SUCCESS" && message.domain === "radius") {
+          setStatus(
+            `Radius import completed.\nPrimitives: ${message.summary.primitiveCount}\nSemantic: ${message.summary.semanticCount}\nRemoved obsolete variables: ${message.summary.removedVariableCount}`,
             "ok",
           );
           return;

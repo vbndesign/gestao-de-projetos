@@ -1,0 +1,23 @@
+{
+  "radius": {
+    "primitive": {
+      "none": "0px",
+      "xs": "2px",
+      "sm": "4px",
+      "md": "6px",
+      "lg": "8px",
+      "xl": "16px",
+      "full": "9999px"
+    },
+    "semantic": {
+      "button": "{radius.primitive.md}",
+      "input": "{radius.primitive.sm}",
+      "card": "{radius.primitive.lg}",
+      "badge": "{radius.primitive.full}",
+      "dialog": "{radius.primitive.xl}",
+      "tag": "{radius.primitive.sm}",
+      "avatar": "{radius.primitive.full}",
+      "tooltip": "{radius.primitive.xs}"
+    }
+  }
+}
